@@ -26,10 +26,6 @@ ARMADILLO_INC=./armadillo-12.8.2/include
 CUDA_INC=-I$(HPC_SDK_ROOT)/cuda/12.3/targets/x86_64-linux/include
 INCFLAGS=-I$(ARMADILLO_INC) -I$(CUDA_INC) -I$(CUDA_HELPER_INC)
 
-# Library paths
-# LIB64_PATH=/opt/ohpc/pub/compiler/cuda/hpc_sdk/Linux_x86_64/23.7/cuda/12.2/lib64
-# LDFLAGS=-L$(LIB64_PATH) -lcudart
-
 default: main_q1 main_q2 main_q3
 
 gtest: gtest.a gtest_main.a
