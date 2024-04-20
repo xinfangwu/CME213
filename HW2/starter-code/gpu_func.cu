@@ -108,8 +108,8 @@ __global__ void MatSigmoid(DeviceMatrix src, DeviceMatrix dst)
 {
   // TODO: implement this kernel function
   // Hint: Use Exp() from common.h
-  int row = blockIdx.y * blockDim.y + threadIdx.y;
-  int col = blockIdx.x * blockDim.x + threadIdx.x;
+  int row = blockIdx.x * blockDim.x + threadIdx.x;
+  int col = blockIdx.y * blockDim.y + threadIdx.y;
 
   if (row < src.n_rows && col < src.n_cols)
   {
@@ -246,11 +246,12 @@ void DSigmoid(DeviceMatrix src, DeviceMatrix dst)
   assert (src.n_rows == dst.n_rows && src.n_cols == dst.n_cols);
 
   // launch kernel 
-  dim3 blockSize(16, 16);
-  dim3 gridSize((src.n_cols + blockSize.x - 1) / blockSize.x,
-                  (src.n_rows + blockSize.y - 1) / blockSize.y);
+  dim3 blockSize(32, 32);
+  int blocks_per_grid_row = (src.n_cols + blockSize.x - 1) / blockSize.x;
+  int blocks_per_grid_col = (src.n_rows + blockSize.y - 1) / blockSize.y;
+  dim3 gridSize(blocks_per_grid_row, blocks_per_grid_col);
 
-  MatSigmoid<<<gridDim, blockDim>>>(src, dst);
+  MatSigmoid<<<gridSize, blockSize>>>(src, dst);
 
   // Check for any errors launching the kernel
   cudaError_t error = cudaGetLastError();
