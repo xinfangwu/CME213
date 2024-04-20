@@ -41,15 +41,21 @@ TEST(testMatrix, deviceWarmup) {
 
 TEST(testMatrix, deviceSigmoid) {
   int n_rows = 5, n_cols = 5;
-
+  printf("pass 00");
+  std::stringstream ss;
+  std::cout << "pass 0";
   arma::Mat<nn_real> X_in(n_rows, n_cols, arma::fill::randn);
+  printf("pass 0");
   arma::Mat<nn_real> X_out;
+  printf("pass 0.5");
   arma::Mat<nn_real> X_out_gpu(n_rows, n_cols);
-
+  printf("pass 1");
   sigmoid(X_in, X_out);
+  printf("pass 2");
 
   DeviceMatrix d_X_in(X_in);
   DeviceMatrix d_X_out(n_rows, n_cols);
+  printf("pass 3");
 
   DSigmoid(d_X_in, d_X_out);
   d_X_out.to_cpu(X_out_gpu);

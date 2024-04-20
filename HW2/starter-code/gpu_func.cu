@@ -16,21 +16,41 @@
 DeviceAllocator::DeviceAllocator(nn_real *cpu_data, int n)
 {
   // TODO: implement this constructor
+  cudaMalloc(&data, n * sizeof(nn_real));
+  cudaMemcpy(data, cpu_data, n * sizeof(nn_real), cudaMemcpyHostToDevice);
+  nbytes = n * sizeof(nn_real);
+
+  // cudaError_t err = cudaMalloc(&data, n * sizeof(nn_real));
+  // if (err != cudaSuccess) {
+  //     throw std::runtime_error("CUDA malloc failed: " + std::string(cudaGetErrorString(err)));
+  // }
+
+  // err = cudaMemcpy(data, cpu_data, n * sizeof(nn_real), cudaMemcpyHostToDevice);
+  // if (err != cudaSuccess) {
+  //     cudaFree(data);  // Cleanup if copy fails
+  //     throw std::runtime_error("CUDA memcpy failed: " + std::string(cudaGetErrorString(err)));
+  // }
+
+  // nbytes = n * sizeof(nn_real);
 }
 
 DeviceAllocator::DeviceAllocator(int n)
 {
   // TODO: implement this constructor
+  cudaMalloc(&data, n * sizeof(nn_real));
+  nbytes = n * sizeof(nn_real);
 }
 
 DeviceAllocator::~DeviceAllocator()
 {
   // TODO: implement this destructor
+  cudaFree(data);
 }
 
 void DeviceAllocator::to_cpu(nn_real *cpu_data)
 {
   // TODO: implement this function
+  cudaMemcpy(cpu_data, data, nbytes, cudaMemcpyDeviceToHost);
 }
 
 // +-*=+-*=+-*=+-*=+-*=+-*=+-*=+-*=+*-=+-*=+*-=+-*=+-*=+-*=+-*=+-*= //
@@ -40,11 +60,21 @@ void DeviceAllocator::to_cpu(nn_real *cpu_data)
 DeviceMatrix::DeviceMatrix(int n_rows, int n_cols)
 {
   // TODO: implement this constructor
+  this->n_rows = n_rows;
+  this->n_cols = n_cols;
+  // DeviceAllocator *allocator = new DeviceAllocator(n_rows * n_cols);
+  allocator = std::make_shared<DeviceAllocator>(n_rows * n_cols * sizeof(nn_real));
+  data = allocator->data;
 }
 
 DeviceMatrix::DeviceMatrix(arma::Mat<nn_real> &cpu_mat)
 {
   // TODO: implement this constructor
+  // DeviceAllocator *allocator = new DeviceAllocator(cpu_mat.memptr(), cpu_mat.n_elem);
+  this->n_rows = cpu_mat.n_rows;
+  this->n_cols = cpu_mat.n_cols;
+  allocator = std::make_shared<DeviceAllocator>(cpu_mat.memptr(), cpu_mat.n_elem * sizeof(nn_real));
+  data = allocator->data;
 }
 
 void DeviceMatrix::to_cpu(arma::Mat<nn_real> &cpu_mat)
@@ -78,6 +108,13 @@ __global__ void MatSigmoid(DeviceMatrix src, DeviceMatrix dst)
 {
   // TODO: implement this kernel function
   // Hint: Use Exp() from common.h
+  int row = blockIdx.y * blockDim.y + threadIdx.y;
+  int col = blockIdx.x * blockDim.x + threadIdx.x;
+
+  if (row < src.n_rows && col < src.n_cols)
+  {
+    dst(row, col) = 1 / (1 + Exp(-src(row, col)));
+  }
 }
 
 /**
@@ -205,6 +242,25 @@ void DSigmoid(DeviceMatrix src, DeviceMatrix dst)
 {
   // TODO: implement this function
 
+  // ensure the src and dst matrices have the same dimensions
+  assert (src.n_rows == dst.n_rows && src.n_cols == dst.n_cols);
+
+  // launch kernel 
+  dim3 blockSize(16, 16);
+  dim3 gridSize((src.n_cols + blockSize.x - 1) / blockSize.x,
+                  (src.n_rows + blockSize.y - 1) / blockSize.y);
+
+  MatSigmoid<<<gridDim, blockDim>>>(src, dst);
+
+  // Check for any errors launching the kernel
+  cudaError_t error = cudaGetLastError();
+  if (error != cudaSuccess) {
+      fprintf(stderr, "CUDA error: %s\n", cudaGetErrorString(error));
+      exit(-1);
+  }
+
+  // Optional: Synchronize device to wait for completion
+  cudaDeviceSynchronize();
   CHECK_LAUNCH("DSigmoid");
 }
 

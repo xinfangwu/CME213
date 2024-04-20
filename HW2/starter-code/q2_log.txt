@@ -1,0 +1,45 @@
+Running main() from ./googletest-main/googletest/src/gtest_main.cc
+[==========] Running 1 test from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 1 test from testQ3
+[ RUN      ] testQ3.StrideTest
+# Using device: Quadro RTX 6000
+# stride     time [ms]   GB/sec
+       1      1.3502     444.4
+       2      3.3761     177.7
+       3      5.3595     112.0
+       4      6.7581      88.8
+       5      8.8384      67.9
+       6     10.2118      58.8
+       7     12.2761      48.9
+       8     13.0828      45.9
+       9     15.5815      38.5
+      10     16.4254      36.5
+      11     18.2430      32.9
+      12     18.9620      31.6
+      13     20.4909      29.3
+      14     20.6206      29.1
+      15     22.1319      27.1
+      16     20.9758      28.6
+      17     23.9320      25.1
+      18     23.2557      25.8
+      19     25.4057      23.6
+      20     24.6112      24.4
+      21     26.4203      22.7
+      22     26.0365      23.0
+      23     28.6655      20.9
+      24     26.9577      22.3
+      25     29.4919      20.3
+      26     28.0089      21.4
+      27     30.5943      19.6
+      28     29.5811      20.3
+      29     31.6574      19.0
+      30     30.4282      19.7
+      31     32.5750      18.4
+      32     29.4519      20.4
+[       OK ] testQ3.StrideTest (85690 ms)
+[----------] 1 test from testQ3 (85690 ms total)
+
+[----------] Global test environment tear-down
+[==========] 1 test from 1 test suite ran. (85690 ms total)
+[  PASSED  ] 1 test.

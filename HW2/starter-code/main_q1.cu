@@ -39,10 +39,12 @@ extern const size_t ITER_MAX_CHECK = 10;
    This is to avoid having to consider the accumulation of roundoff errors.
 */
 
-// TODO: initialize an array of size arr_size in input_array with random floats
+// V TODO: initialize an array of size arr_size in input_array with random floats
 // between -1 and 1
 void initialize_array(vec &input_array, size_t arr_size) {
-
+  for(size_t i=0; i<arr_size; i++){
+    input_array.push_back(((float)(rand()) / (float)(RAND_MAX)) * 2 - 1 );
+  }
 }
 
 void host_recurrence(vec &input_array, vec &output_array, size_t num_iter,
@@ -77,14 +79,17 @@ class RecurrenceTestFixture : public ::testing::Test {
     device_input_array = nullptr;
     device_output_array = nullptr;
 
-    // TODO: allocate num_bytes of memory to the device arrays.
+    // V TODO: allocate num_bytes of memory to the device arrays.
     // Hint: use cudaMalloc
+    cudaMalloc(&device_input_array, num_bytes);
+    cudaMalloc(&device_output_array, num_bytes);
 
   }
 
-  // TODO: deallocate memory from both device arrays
+  // V TODO: deallocate memory from both device arrays
   ~RecurrenceTestFixture() {
-
+    cudaFree(device_input_array);
+    cudaFree(device_output_array);
   }
 
   void initialize() {
@@ -109,7 +114,7 @@ class RecurrenceTestFixture : public ::testing::Test {
   std::vector<double> performance_array;
 };
 
-// TODO: allocate num_bytes of memory to the device arrays in the TEST FIXTURE
+// V TODO: allocate num_bytes of memory to the device arrays in the TEST FIXTURE
 // CONSTRUCTOR and deallocate the memory in the TEST FIXTURE DESTRUCTOR.
 // Hint: use cudaMalloc and cudaFree
 TEST_F(RecurrenceTestFixture, GPUAllocationTest_1) {
@@ -120,13 +125,13 @@ TEST_F(RecurrenceTestFixture, GPUAllocationTest_1) {
   }
 }
 
-// TODO: Implement initialize_array function
+// V TODO: Implement initialize_array function
 TEST_F(RecurrenceTestFixture, InitalizeArrayTest_2) {
   initialize_array(init_arr, MAX_ARR_SIZE);
   check_initialization(init_arr, MAX_ARR_SIZE);
 }
 
-// TODO: Implement Recurrence Kernel Fuctions in Recurrence.cuh
+// V TODO: Implement Recurrence Kernel Fuctions in Recurrence.cuh
 TEST_F(RecurrenceTestFixture, RecurrenceKernelTest_3) {
   // init array
   initialize();
