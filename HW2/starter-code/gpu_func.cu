@@ -306,6 +306,12 @@ __global__ void MatElemArith(DeviceMatrix A, DeviceMatrix B, nn_real alpha,
 __global__ void MatSquare(DeviceMatrix src, DeviceMatrix dst)
 {
   // TODO: implement this kernel function
+  int row = blockIdx.x * blockDim.x + threadIdx.x;
+  int col = blockIdx.y * blockDim.y + threadIdx.y;
+  
+  if(row < src.n_rows && col < src.n_cols){
+    dst(row, col) = src(row, col) * src(row, col);
+  }
 }
 
 /**
@@ -429,13 +435,21 @@ void DElemArith(DeviceMatrix A, DeviceMatrix B, nn_real alpha, nn_real beta)
   dim3 gridSize(blocks_per_grid_row, blocks_per_grid_col);
 
   MatElemArith<<<gridSize, blockSize>>>(A, B, alpha, beta);
+  cudaDeviceSynchronize();
   CHECK_LAUNCH("DElemArith");
 }
 
 void DSquare(DeviceMatrix src, DeviceMatrix dst)
 {
   // TODO: implement this function
+  assert (src.n_rows == dst.n_rows && src.n_cols == dst.n_cols);
+  dim3 blockSize(32, 32);
+  int blocks_per_grid_row = (src.n_rows + blockSize.x - 1) / blockSize.x;
+  int blocks_per_grid_col = (src.n_cols + blockSize.y - 1) / blockSize.y;
+  dim3 gridSize(blocks_per_grid_row, blocks_per_grid_col);
 
+  MatSquare<<<gridSize, blockSize>>>(src, dst);
+  cudaDeviceSynchronize();
   CHECK_LAUNCH("DSquare");
 }
 
