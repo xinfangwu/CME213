@@ -80,7 +80,7 @@ DeviceMatrix::DeviceMatrix(int n_rows, int n_cols)
   // TODO: implement this constructor
   this->n_rows = n_rows;
   this->n_cols = n_cols;
-  allocator = std::make_shared<DeviceAllocator>(this->n_rows * this->n_cols );
+  allocator = std::make_shared<DeviceAllocator>(this->n_rows * this->n_cols);
   data = allocator->data;
 }
 
@@ -150,9 +150,6 @@ __global__ void MatRepeatColVec(DeviceMatrix src, DeviceMatrix dst,
   // TODO: implement this kernel function
   int row = blockIdx.x * blockDim.x + threadIdx.x;
   int col = blockIdx.y * blockDim.y + threadIdx.y;
-  // NEED optimize?
-  // int total_threads_x = gridDim.x * blockDim.x;
-  // int total_threads_y = gridDim.y * blockDim.y;
   if (col < src.n_cols)
   {
     for(int i=0; i<repeat; i++){
@@ -179,6 +176,31 @@ __global__ void MatSum(DeviceMatrix src, DeviceMatrix dst, nn_real alpha,
                        int axis)
 {
   // TODO: implement this kernel function
+  if(axis == 1){
+    // col
+    int thread_Idx = blockIdx.x * blockDim.x + threadIdx.x;
+    nn_real sum = 0;
+    if(thread_Idx < src.n_rows){
+      for(int i=0; i<src.n_cols; i++){
+        sum += src(thread_Idx, i);
+      }
+      sum = sum * alpha;
+      dst(thread_Idx, 0) = sum;
+    }
+  }
+  else if(axis == 0){
+    // row
+    int thread_Idx = blockIdx.y * blockDim.y + threadIdx.y;
+    nn_real sum = 0;
+    if (thread_Idx < src.n_cols){
+      for(int i=0; i<src.n_rows; i++){
+        sum += src(i, thread_Idx);
+      }
+      sum = sum * alpha;
+      dst(0, thread_Idx) = sum;
+    }
+  }
+
 }
 
 /**
@@ -314,7 +336,13 @@ void DRepeatColVec(DeviceMatrix src, DeviceMatrix dst, int repeat)
 void DSum(DeviceMatrix src, DeviceMatrix dst, nn_real alpha, int axis)
 {
   // TODO: implement this function
+  dim3 blockSize(32, 32);
+  int blocks_per_grid_row = (src.n_rows + blockSize.x - 1) / blockSize.x;
+  int blocks_per_grid_col = (src.n_cols + blockSize.y - 1) / blockSize.y;
+  dim3 gridSize(blocks_per_grid_row, blocks_per_grid_col);
 
+  MatSum<<<gridSize, blockSize>>>(src, dst, alpha, axis);
+  cudaDeviceSynchronize();
   CHECK_LAUNCH("DSum");
 }
 
