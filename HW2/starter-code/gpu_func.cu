@@ -330,6 +330,12 @@ __global__ void MatSigmoidBackProp(DeviceMatrix da1, DeviceMatrix a1,
    * Hint: This kernel computes dz1 = da1 * a1 * (1 - a1), where * denotes
    * element-wise multiplication.
    */
+  int row = blockIdx.x * blockDim.x + threadIdx.x;
+  int col = blockIdx.y * blockDim.y + threadIdx.y;
+  
+  if(row < a1.n_rows && col < a1.n_cols){
+    dz1(row, col) = da1(row, col) * a1(row, col) * (1 - a1(row, col));
+  }
 }
 
 __global__ void Warmup() {}
@@ -456,7 +462,13 @@ void DSquare(DeviceMatrix src, DeviceMatrix dst)
 void DSigmoidBackprop(DeviceMatrix da1, DeviceMatrix a1, DeviceMatrix dz1)
 {
   // TODO: implement this function
+  dim3 blockSize(32, 32);
+  int blocks_per_grid_row = (da1.n_rows + blockSize.x - 1) / blockSize.x;
+  int blocks_per_grid_col = (da1.n_cols + blockSize.y - 1) / blockSize.y;
+  dim3 gridSize(blocks_per_grid_row, blocks_per_grid_col);
 
+  MatSigmoidBackProp<<<gridSize, blockSize>>>(da1, a1, dz1);
+  cudaDeviceSynchronize();
   CHECK_LAUNCH("DSigmoidBackprop");
 }
 
