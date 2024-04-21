@@ -16,35 +16,53 @@
 DeviceAllocator::DeviceAllocator(nn_real *cpu_data, int n)
 {
   // TODO: implement this constructor
-  cudaMalloc(&data, n * sizeof(nn_real));
-  cudaMemcpy(data, cpu_data, n * sizeof(nn_real), cudaMemcpyHostToDevice);
   nbytes = n * sizeof(nn_real);
+  // cudaMalloc(&data, nbytes);
+  // cudaMemcpy(data, cpu_data, nbytes, cudaMemcpyHostToDevice);
+
 
   // cudaError_t err = cudaMalloc(&data, n * sizeof(nn_real));
   // if (err != cudaSuccess) {
   //     throw std::runtime_error("CUDA malloc failed: " + std::string(cudaGetErrorString(err)));
   // }
-
-  // err = cudaMemcpy(data, cpu_data, n * sizeof(nn_real), cudaMemcpyHostToDevice);
+  
+  // cudaError_t err = cudaMalloc(&data, n * sizeof(nn_real));
   // if (err != cudaSuccess) {
-  //     cudaFree(data);  // Cleanup if copy fails
-  //     throw std::runtime_error("CUDA memcpy failed: " + std::string(cudaGetErrorString(err)));
+  //     throw std::runtime_error("CUDA malloc failed: " + std::string(cudaGetErrorString(err)));
   // }
 
-  // nbytes = n * sizeof(nn_real);
+  cudaError_t err = cudaMalloc(&data, nbytes);
+  if (err != cudaSuccess) {
+      throw std::runtime_error("CUDA malloc failed: " + std::string(cudaGetErrorString(err)));
+  }
+
+  err = cudaMemcpy(data, cpu_data, nbytes, cudaMemcpyHostToDevice);
+  if (err != cudaSuccess) {
+      cudaFree(data);  // Cleanup if copy fails
+      throw std::runtime_error("CUDA memcpy failed: " + std::string(cudaGetErrorString(err)));
+  }
 }
 
 DeviceAllocator::DeviceAllocator(int n)
 {
   // TODO: implement this constructor
-  cudaMalloc(&data, n * sizeof(nn_real));
   nbytes = n * sizeof(nn_real);
+  cudaError_t err = cudaMalloc(&data, nbytes);
+  if (err != cudaSuccess) {
+      throw std::runtime_error("CUDA malloc failed: " + std::string(cudaGetErrorString(err)));
+  }
+  
 }
 
 DeviceAllocator::~DeviceAllocator()
 {
   // TODO: implement this destructor
-  cudaFree(data);
+  // cudaFree(data);
+  cudaError_t err = cudaFree(data);
+  if (err != cudaSuccess) {
+      throw std::runtime_error("CUDA malloc failed: " + std::string(cudaGetErrorString(err)));
+  }
+  nbytes = 0;
 }
 
 void DeviceAllocator::to_cpu(nn_real *cpu_data)
@@ -62,18 +80,16 @@ DeviceMatrix::DeviceMatrix(int n_rows, int n_cols)
   // TODO: implement this constructor
   this->n_rows = n_rows;
   this->n_cols = n_cols;
-  // DeviceAllocator *allocator = new DeviceAllocator(n_rows * n_cols);
-  allocator = std::make_shared<DeviceAllocator>(n_rows * n_cols * sizeof(nn_real));
+  allocator = std::make_shared<DeviceAllocator>(this->n_rows * this->n_cols );
   data = allocator->data;
 }
 
 DeviceMatrix::DeviceMatrix(arma::Mat<nn_real> &cpu_mat)
 {
   // TODO: implement this constructor
-  // DeviceAllocator *allocator = new DeviceAllocator(cpu_mat.memptr(), cpu_mat.n_elem);
   this->n_rows = cpu_mat.n_rows;
   this->n_cols = cpu_mat.n_cols;
-  allocator = std::make_shared<DeviceAllocator>(cpu_mat.memptr(), cpu_mat.n_elem * sizeof(nn_real));
+  allocator = std::make_shared<DeviceAllocator>(cpu_mat.memptr(), this->n_rows * this->n_cols);
   data = allocator->data;
 }
 
@@ -110,6 +126,9 @@ __global__ void MatSigmoid(DeviceMatrix src, DeviceMatrix dst)
   // Hint: Use Exp() from common.h
   int row = blockIdx.x * blockDim.x + threadIdx.x;
   int col = blockIdx.y * blockDim.y + threadIdx.y;
+  // NEED optimize?
+  // int total_threads_x = gridDim.x * blockDim.x;
+  // int total_threads_y = gridDim.y * blockDim.y;
 
   if (row < src.n_rows && col < src.n_cols)
   {
@@ -129,6 +148,21 @@ __global__ void MatRepeatColVec(DeviceMatrix src, DeviceMatrix dst,
                                 int repeat)
 {
   // TODO: implement this kernel function
+  int row = blockIdx.x * blockDim.x + threadIdx.x;
+  int col = blockIdx.y * blockDim.y + threadIdx.y;
+  // NEED optimize?
+  // int total_threads_x = gridDim.x * blockDim.x;
+  // int total_threads_y = gridDim.y * blockDim.y;
+  if (col < src.n_cols)
+  {
+    for(int i=0; i<repeat; i++){
+      int dst_col = col + (i) * src.n_cols;
+      if (dst_col < dst.n_cols) {  // Ensure we do not write out of bounds
+        dst(row, dst_col) = src(row, col);  // Copy src element to the repeated positions in dst
+      }
+    }
+    
+  }
 }
 
 /**
@@ -247,8 +281,8 @@ void DSigmoid(DeviceMatrix src, DeviceMatrix dst)
 
   // launch kernel 
   dim3 blockSize(32, 32);
-  int blocks_per_grid_row = (src.n_cols + blockSize.x - 1) / blockSize.x;
-  int blocks_per_grid_col = (src.n_rows + blockSize.y - 1) / blockSize.y;
+  int blocks_per_grid_row = (src.n_rows + blockSize.x - 1) / blockSize.x;
+  int blocks_per_grid_col = (src.n_cols + blockSize.y - 1) / blockSize.y;
   dim3 gridSize(blocks_per_grid_row, blocks_per_grid_col);
 
   MatSigmoid<<<gridSize, blockSize>>>(src, dst);
@@ -260,7 +294,6 @@ void DSigmoid(DeviceMatrix src, DeviceMatrix dst)
       exit(-1);
   }
 
-  // Optional: Synchronize device to wait for completion
   cudaDeviceSynchronize();
   CHECK_LAUNCH("DSigmoid");
 }
@@ -268,7 +301,13 @@ void DSigmoid(DeviceMatrix src, DeviceMatrix dst)
 void DRepeatColVec(DeviceMatrix src, DeviceMatrix dst, int repeat)
 {
   // TODO: implement this function
+  dim3 blockSize(32, 32);
+  int blocks_per_grid_row = (src.n_rows + blockSize.x - 1) / blockSize.x;
+  int blocks_per_grid_col = (src.n_cols + blockSize.y - 1) / blockSize.y;
+  dim3 gridSize(blocks_per_grid_row, blocks_per_grid_col);
 
+  MatRepeatColVec<<<gridSize, blockSize>>>(src, dst, repeat);
+  cudaDeviceSynchronize();
   CHECK_LAUNCH("DRepeatColVec");
 }
 
