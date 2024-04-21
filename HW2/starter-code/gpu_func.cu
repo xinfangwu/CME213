@@ -222,6 +222,33 @@ __global__ void MatSoftmax(DeviceMatrix src, DeviceMatrix dst, int axis)
    * the row by iterating through elements in the row, and then replace
    * dst(row, col) with the exponential of src(row, col) divided by the sum.
    */
+    if(axis == 1){
+    // col
+    int thread_Idx = blockIdx.x * blockDim.x + threadIdx.x;
+    nn_real sum = 0;
+    if(thread_Idx < src.n_rows){
+      for(int i=0; i<src.n_cols; i++){
+        sum += Exp(src(thread_Idx, i));
+      }
+
+      for(int j=0; j<src.n_cols; j++){
+        dst(thread_Idx, j) = Exp(src(thread_Idx, j))/sum;
+      }
+    }
+  }
+  else if(axis == 0){
+    // row
+    int thread_Idx = blockIdx.y * blockDim.y + threadIdx.y;
+    nn_real sum = 0;
+    if (thread_Idx < src.n_cols){
+      for(int i=0; i<src.n_rows; i++){
+        sum += Exp(src(i, thread_Idx));
+      }
+      for(int j=0; j<src.n_rows; j++){
+        dst(j, thread_Idx) = Exp(src(j, thread_Idx))/sum;
+      }
+    }
+  }
 }
 
 /**
@@ -349,7 +376,13 @@ void DSum(DeviceMatrix src, DeviceMatrix dst, nn_real alpha, int axis)
 void DSoftmax(DeviceMatrix src, DeviceMatrix dst, int axis)
 {
   // TODO: implement this function
+    dim3 blockSize(32, 32);
+  int blocks_per_grid_row = (src.n_rows + blockSize.x - 1) / blockSize.x;
+  int blocks_per_grid_col = (src.n_cols + blockSize.y - 1) / blockSize.y;
+  dim3 gridSize(blocks_per_grid_row, blocks_per_grid_col);
 
+  MatSoftmax<<<gridSize, blockSize>>>(src, dst, axis);
+  cudaDeviceSynchronize();
   CHECK_LAUNCH("DSoftmax");
 }
 
