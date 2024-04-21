@@ -288,6 +288,12 @@ __global__ void MatElemArith(DeviceMatrix A, DeviceMatrix B, nn_real alpha,
                              nn_real beta)
 {
   // TODO: implement this kernel function
+  int row = blockIdx.x * blockDim.x + threadIdx.x;
+  int col = blockIdx.y * blockDim.y + threadIdx.y;
+  
+  if(row < A.n_rows && col < A.n_cols){
+    A(row, col) = alpha * (A(row, col) + beta * B(row, col));
+  }
 }
 
 /**
@@ -400,16 +406,15 @@ void DCELoss(DeviceMatrix y_pred, DeviceMatrix y, DeviceMatrix loss)
    * in T.
    */
 
-  DeviceMatrix T1(y.n_rows, y.n_cols); //to store the loss
-  DeviceMatrix T2(y.n_rows, 1); //to store the loss
+  DeviceMatrix T(y.n_rows, y.n_cols); //to store the loss
   dim3 blockSize(32, 32);
   int blocks_per_grid_row = (y.n_rows + blockSize.x - 1) / blockSize.x;
   int blocks_per_grid_col = (y.n_cols + blockSize.y - 1) / blockSize.y;
   dim3 gridSize(blocks_per_grid_row, blocks_per_grid_col);
 
-  MatCrossEntropyLoss<<<gridSize, blockSize>>>(y_pred, y, T1);
-  DSum(T1, T2, 1, 0);
-  DSum(T2, loss, 1, 1);
+  MatCrossEntropyLoss<<<gridSize, blockSize>>>(y_pred, y, T);
+  DSum(T, T, 1, 0);
+  DSum(T, loss, 1, 1);
   cudaDeviceSynchronize();
   CHECK_LAUNCH("DCELoss");
 }
@@ -417,7 +422,13 @@ void DCELoss(DeviceMatrix y_pred, DeviceMatrix y, DeviceMatrix loss)
 void DElemArith(DeviceMatrix A, DeviceMatrix B, nn_real alpha, nn_real beta)
 {
   // TODO: implement this function
+  assert (A.n_rows == B.n_rows && A.n_cols == B.n_cols);
+  dim3 blockSize(32, 32);
+  int blocks_per_grid_row = (A.n_rows + blockSize.x - 1) / blockSize.x;
+  int blocks_per_grid_col = (A.n_cols + blockSize.y - 1) / blockSize.y;
+  dim3 gridSize(blocks_per_grid_row, blocks_per_grid_col);
 
+  MatElemArith<<<gridSize, blockSize>>>(A, B, alpha, beta);
   CHECK_LAUNCH("DElemArith");
 }
 
