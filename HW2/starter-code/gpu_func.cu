@@ -268,6 +268,11 @@ __global__ void MatCrossEntropyLoss(DeviceMatrix y_pred, DeviceMatrix y,
    * element-wise multiplication and log is applied element-wise. Use
    * Log() from common.h
    */
+  int row = blockIdx.x * blockDim.x + threadIdx.x;
+  int col = blockIdx.y * blockDim.y + threadIdx.y;
+  if(row < y.n_rows && col < y.n_cols){
+    loss(row, col) = -y(row, col) * Log(y_pred(row, col));
+  }
 }
 
 /**
@@ -376,7 +381,7 @@ void DSum(DeviceMatrix src, DeviceMatrix dst, nn_real alpha, int axis)
 void DSoftmax(DeviceMatrix src, DeviceMatrix dst, int axis)
 {
   // TODO: implement this function
-    dim3 blockSize(32, 32);
+  dim3 blockSize(32, 32);
   int blocks_per_grid_row = (src.n_rows + blockSize.x - 1) / blockSize.x;
   int blocks_per_grid_col = (src.n_cols + blockSize.y - 1) / blockSize.y;
   dim3 gridSize(blocks_per_grid_row, blocks_per_grid_col);
@@ -394,6 +399,18 @@ void DCELoss(DeviceMatrix y_pred, DeviceMatrix y, DeviceMatrix loss)
    * MatCrossEntropyLoss. Call DSum twice to compute the sum of all elements
    * in T.
    */
+
+  DeviceMatrix T1(y.n_rows, y.n_cols); //to store the loss
+  DeviceMatrix T2(y.n_rows, 1); //to store the loss
+  dim3 blockSize(32, 32);
+  int blocks_per_grid_row = (y.n_rows + blockSize.x - 1) / blockSize.x;
+  int blocks_per_grid_col = (y.n_cols + blockSize.y - 1) / blockSize.y;
+  dim3 gridSize(blocks_per_grid_row, blocks_per_grid_col);
+
+  MatCrossEntropyLoss<<<gridSize, blockSize>>>(y_pred, y, T1);
+  DSum(T1, T2, 1, 0);
+  DSum(T2, loss, 1, 1);
+  cudaDeviceSynchronize();
   CHECK_LAUNCH("DCELoss");
 }
 
