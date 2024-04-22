@@ -15,59 +15,29 @@
 
 DeviceAllocator::DeviceAllocator(nn_real *cpu_data, int n)
 {
-  // TODO: implement this constructor
+  // V TODO: implement this constructor
   nbytes = n * sizeof(nn_real);
-  // cudaMalloc(&data, nbytes);
-  // cudaMemcpy(data, cpu_data, nbytes, cudaMemcpyHostToDevice);
-
-
-  // cudaError_t err = cudaMalloc(&data, n * sizeof(nn_real));
-  // if (err != cudaSuccess) {
-  //     throw std::runtime_error("CUDA malloc failed: " + std::string(cudaGetErrorString(err)));
-  // }
-  
-  // cudaError_t err = cudaMalloc(&data, n * sizeof(nn_real));
-  // if (err != cudaSuccess) {
-  //     throw std::runtime_error("CUDA malloc failed: " + std::string(cudaGetErrorString(err)));
-  // }
-
-  cudaError_t err = cudaMalloc(&data, nbytes);
-  if (err != cudaSuccess) {
-      throw std::runtime_error("CUDA malloc failed: " + std::string(cudaGetErrorString(err)));
-  }
-
-  err = cudaMemcpy(data, cpu_data, nbytes, cudaMemcpyHostToDevice);
-  if (err != cudaSuccess) {
-      cudaFree(data);  // Cleanup if copy fails
-      throw std::runtime_error("CUDA memcpy failed: " + std::string(cudaGetErrorString(err)));
-  }
+  cudaMalloc(&data, nbytes);
+  cudaMemcpy(data, cpu_data, nbytes, cudaMemcpyHostToDevice);
 }
 
 DeviceAllocator::DeviceAllocator(int n)
 {
-  // TODO: implement this constructor
+  // V TODO: implement this constructor
   nbytes = n * sizeof(nn_real);
-  cudaError_t err = cudaMalloc(&data, nbytes);
-  if (err != cudaSuccess) {
-      throw std::runtime_error("CUDA malloc failed: " + std::string(cudaGetErrorString(err)));
-  }
-  
+  cudaMalloc(&data, nbytes);
 }
 
 DeviceAllocator::~DeviceAllocator()
 {
-  // TODO: implement this destructor
-  // cudaFree(data);
-  cudaError_t err = cudaFree(data);
-  if (err != cudaSuccess) {
-      throw std::runtime_error("CUDA malloc failed: " + std::string(cudaGetErrorString(err)));
-  }
+  // V TODO: implement this destructor
+  cudaFree(data);
   nbytes = 0;
 }
 
 void DeviceAllocator::to_cpu(nn_real *cpu_data)
 {
-  // TODO: implement this function
+  // V TODO: implement this function
   cudaMemcpy(cpu_data, data, nbytes, cudaMemcpyDeviceToHost);
 }
 
@@ -77,7 +47,7 @@ void DeviceAllocator::to_cpu(nn_real *cpu_data)
 
 DeviceMatrix::DeviceMatrix(int n_rows, int n_cols)
 {
-  // TODO: implement this constructor
+  // V TODO: implement this constructor
   this->n_rows = n_rows;
   this->n_cols = n_cols;
   allocator = std::make_shared<DeviceAllocator>(this->n_rows * this->n_cols);
@@ -86,7 +56,7 @@ DeviceMatrix::DeviceMatrix(int n_rows, int n_cols)
 
 DeviceMatrix::DeviceMatrix(arma::Mat<nn_real> &cpu_mat)
 {
-  // TODO: implement this constructor
+  // V TODO: implement this constructor
   this->n_rows = cpu_mat.n_rows;
   this->n_cols = cpu_mat.n_cols;
   allocator = std::make_shared<DeviceAllocator>(cpu_mat.memptr(), this->n_rows * this->n_cols);
@@ -124,16 +94,17 @@ __global__ void MatSigmoid(DeviceMatrix src, DeviceMatrix dst)
 {
   // TODO: implement this kernel function
   // Hint: Use Exp() from common.h
-  int row = blockIdx.x * blockDim.x + threadIdx.x;
-  int col = blockIdx.y * blockDim.y + threadIdx.y;
-  // NEED optimize?
-  // int total_threads_x = gridDim.x * blockDim.x;
-  // int total_threads_y = gridDim.y * blockDim.y;
+  int row_init = blockIdx.x * blockDim.x + threadIdx.x;
+  int col_init = blockIdx.y * blockDim.y + threadIdx.y;
+  int total_threads_x = gridDim.x * blockDim.x;
+  int total_threads_y = gridDim.y * blockDim.y;
 
-  if (row < src.n_rows && col < src.n_cols)
-  {
-    dst(row, col) = 1 / (1 + Exp(-src(row, col)));
+  for(int row = row_init; row < src.n_rows; row += total_threads_x){
+    for(int col = col_init; col < src.n_cols; col += total_threads_y){
+        dst(row, col) = 1 / (1 + Exp(-src(row, col)));
+    }
   }
+  
 }
 
 /**
@@ -148,17 +119,20 @@ __global__ void MatRepeatColVec(DeviceMatrix src, DeviceMatrix dst,
                                 int repeat)
 {
   // TODO: implement this kernel function
-  int row = blockIdx.x * blockDim.x + threadIdx.x;
-  int col = blockIdx.y * blockDim.y + threadIdx.y;
-  if (col < src.n_cols)
-  {
-    for(int i=0; i<repeat; i++){
-      int dst_col = col + (i) * src.n_cols;
-      if (dst_col < dst.n_cols) {  // Ensure we do not write out of bounds
-        dst(row, dst_col) = src(row, col);  // Copy src element to the repeated positions in dst
+  int row_init = blockIdx.x * blockDim.x + threadIdx.x;
+  int col_init = blockIdx.y * blockDim.y + threadIdx.y;
+  int total_threads_x = gridDim.x * blockDim.x;
+  int total_threads_y = gridDim.y * blockDim.y;
+
+  for(int row = row_init; row < src.n_rows; row += total_threads_x){
+    for(int col = col_init; col < src.n_cols; col += total_threads_y){
+      for(int i=0; i<repeat; i++){
+        int dst_col = col + (i) * src.n_cols;
+        if (dst_col < dst.n_cols) {  // Ensure we do not write out of bounds
+          dst(row, dst_col) = src(row, col);  // Copy src element to the repeated positions in dst
+        }
       }
     }
-    
   }
 }
 
@@ -177,27 +151,27 @@ __global__ void MatSum(DeviceMatrix src, DeviceMatrix dst, nn_real alpha,
 {
   // TODO: implement this kernel function
   if(axis == 1){
-    // col
-    int thread_Idx = blockIdx.x * blockDim.x + threadIdx.x;
-    nn_real sum = 0;
-    if(thread_Idx < src.n_rows){
-      for(int i=0; i<src.n_cols; i++){
-        sum += src(thread_Idx, i);
+    // sum along rows -> (n_rows, 1)
+    int total_threads = gridDim.x * blockDim.x;
+    int start_idx = blockIdx.x * blockDim.x + threadIdx.x;
+    for (int row = start_idx; row < src.n_rows; row += total_threads){
+      nn_real sum = 0;
+      for(int col=0; col<src.n_cols; col++){
+        sum += src(row, col);
       }
-      sum = sum * alpha;
-      dst(thread_Idx, 0) = sum;
+      dst(row, 0) = alpha * sum;
     }
   }
-  else if(axis == 0){
-    // row
-    int thread_Idx = blockIdx.y * blockDim.y + threadIdx.y;
-    nn_real sum = 0;
-    if (thread_Idx < src.n_cols){
-      for(int i=0; i<src.n_rows; i++){
-        sum += src(i, thread_Idx);
+  else if (axis == 0){
+    // sum along columns -> (1, n_cols)
+    int total_threads = gridDim.y * blockDim.y;
+    int start_idx = blockIdx.y * blockDim.y + threadIdx.y;
+    for(int col = start_idx; col < src.n_cols; col += total_threads){
+      nn_real sum = 0;
+      for(int row=0; row<src.n_rows; row++){
+        sum += src(row, col);
       }
-      sum = sum * alpha;
-      dst(0, thread_Idx) = sum;
+      dst(0, col) = alpha * sum;
     }
   }
 
@@ -224,28 +198,34 @@ __global__ void MatSoftmax(DeviceMatrix src, DeviceMatrix dst, int axis)
    */
     if(axis == 1){
     // col
-    int thread_Idx = blockIdx.x * blockDim.x + threadIdx.x;
-    nn_real sum = 0;
-    if(thread_Idx < src.n_rows){
-      for(int i=0; i<src.n_cols; i++){
-        sum += Exp(src(thread_Idx, i));
-      }
+    // int thread_Idx = blockIdx.x * blockDim.x + threadIdx.x;
+    int total_threads = gridDim.x * blockDim.x;
+    for(int idx = blockIdx.x * blockDim.x + threadIdx.x; idx < src.n_rows; idx += total_threads){
+      nn_real sum = 0;
+      if(idx < src.n_rows){
+        for(int i=0; i<src.n_cols; i++){
+          sum += Exp(src(idx, i));
+        }
 
-      for(int j=0; j<src.n_cols; j++){
-        dst(thread_Idx, j) = Exp(src(thread_Idx, j))/sum;
+        for(int j=0; j<src.n_cols; j++){
+          dst(idx, j) = Exp(src(idx, j))/sum;
+        }
       }
-    }
+    }    
   }
   else if(axis == 0){
     // row
-    int thread_Idx = blockIdx.y * blockDim.y + threadIdx.y;
-    nn_real sum = 0;
-    if (thread_Idx < src.n_cols){
-      for(int i=0; i<src.n_rows; i++){
-        sum += Exp(src(i, thread_Idx));
-      }
-      for(int j=0; j<src.n_rows; j++){
-        dst(j, thread_Idx) = Exp(src(j, thread_Idx))/sum;
+    // int thread_Idx = blockIdx.y * blockDim.y + threadIdx.y;
+    int total_threads = gridDim.y * blockDim.y;
+    for(int idx = blockIdx.y * blockDim.y + threadIdx.y; idx < src.n_cols; idx += total_threads){
+      nn_real sum = 0;
+      if (idx < src.n_cols){
+        for(int i=0; i<src.n_rows; i++){
+          sum += Exp(src(i, idx));
+        }
+        for(int j=0; j<src.n_rows; j++){
+          dst(j, idx) = Exp(src(j, idx))/sum;
+        }
       }
     }
   }
@@ -268,11 +248,14 @@ __global__ void MatCrossEntropyLoss(DeviceMatrix y_pred, DeviceMatrix y,
    * element-wise multiplication and log is applied element-wise. Use
    * Log() from common.h
    */
-  int row = blockIdx.x * blockDim.x + threadIdx.x;
-  int col = blockIdx.y * blockDim.y + threadIdx.y;
-  if(row < y.n_rows && col < y.n_cols){
-    loss(row, col) = -y(row, col) * Log(y_pred(row, col));
+  int total_threads_x = gridDim.x * blockDim.x;
+  int total_threads_y = gridDim.y * blockDim.y;
+  for(int row = blockIdx.x * blockDim.x + threadIdx.x; row < y.n_rows; row += total_threads_x){
+    for(int col = blockIdx.y * blockDim.y + threadIdx.y; col < y.n_cols; col += total_threads_y){
+        loss(row, col) = -y(row, col) * Log(y_pred(row, col));
+    }
   }
+
 }
 
 /**
@@ -288,12 +271,15 @@ __global__ void MatElemArith(DeviceMatrix A, DeviceMatrix B, nn_real alpha,
                              nn_real beta)
 {
   // TODO: implement this kernel function
-  int row = blockIdx.x * blockDim.x + threadIdx.x;
-  int col = blockIdx.y * blockDim.y + threadIdx.y;
-  
-  if(row < A.n_rows && col < A.n_cols){
-    A(row, col) = alpha * (A(row, col) + beta * B(row, col));
+
+  int total_threads_x = gridDim.x * blockDim.x;
+  int total_threads_y = gridDim.y * blockDim.y;
+  for(int row = blockIdx.x * blockDim.x + threadIdx.x; row < A.n_rows; row += total_threads_x){
+    for(int col = blockIdx.y * blockDim.y + threadIdx.y; col < A.n_cols; col += total_threads_y){
+        A(row, col) = alpha * (A(row, col) + beta * B(row, col));
+    }
   }
+
 }
 
 /**
@@ -306,11 +292,14 @@ __global__ void MatElemArith(DeviceMatrix A, DeviceMatrix B, nn_real alpha,
 __global__ void MatSquare(DeviceMatrix src, DeviceMatrix dst)
 {
   // TODO: implement this kernel function
-  int row = blockIdx.x * blockDim.x + threadIdx.x;
-  int col = blockIdx.y * blockDim.y + threadIdx.y;
-  
-  if(row < src.n_rows && col < src.n_cols){
-    dst(row, col) = src(row, col) * src(row, col);
+  int total_threads_x = gridDim.x * blockDim.x;
+  int total_threads_y = gridDim.y * blockDim.y;
+  for(int row = blockIdx.x * blockDim.x + threadIdx.x; row < src.n_rows; row += total_threads_x){
+    for(int col = blockIdx.y * blockDim.y + threadIdx.y; col < src.n_cols; col += total_threads_y){
+      if(row < src.n_rows && col < src.n_cols){
+        dst(row, col) = src(row, col) * src(row, col);
+      }
+    }
   }
 }
 
@@ -330,11 +319,15 @@ __global__ void MatSigmoidBackProp(DeviceMatrix da1, DeviceMatrix a1,
    * Hint: This kernel computes dz1 = da1 * a1 * (1 - a1), where * denotes
    * element-wise multiplication.
    */
-  int row = blockIdx.x * blockDim.x + threadIdx.x;
-  int col = blockIdx.y * blockDim.y + threadIdx.y;
-  
-  if(row < a1.n_rows && col < a1.n_cols){
-    dz1(row, col) = da1(row, col) * a1(row, col) * (1 - a1(row, col));
+
+  int total_threads_x = gridDim.x * blockDim.x;
+  int total_threads_y = gridDim.y * blockDim.y;
+  for(int row = blockIdx.x * blockDim.x + threadIdx.x; row < a1.n_rows; row += total_threads_x){
+    for(int col = blockIdx.y * blockDim.y + threadIdx.y; col < a1.n_cols; col += total_threads_y){
+      if(row < a1.n_rows && col < a1.n_cols){
+        dz1(row, col) = da1(row, col) * a1(row, col) * (1 - a1(row, col));
+      }
+    }
   }
 }
 
@@ -419,14 +412,16 @@ void DCELoss(DeviceMatrix y_pred, DeviceMatrix y, DeviceMatrix loss)
    */
 
   DeviceMatrix T(y.n_rows, y.n_cols); //to store the loss
+  DeviceMatrix T2(y.n_rows, y.n_cols); //to store the loss
+
   dim3 blockSize(32, 32);
   int blocks_per_grid_row = (y.n_rows + blockSize.x - 1) / blockSize.x;
   int blocks_per_grid_col = (y.n_cols + blockSize.y - 1) / blockSize.y;
   dim3 gridSize(blocks_per_grid_row, blocks_per_grid_col);
 
   MatCrossEntropyLoss<<<gridSize, blockSize>>>(y_pred, y, T);
-  DSum(T, T, 1, 0);
-  DSum(T, loss, 1, 1);
+  DSum(T, T2, 1, 0);
+  DSum(T2, loss, 1, 1);
   cudaDeviceSynchronize();
   CHECK_LAUNCH("DCELoss");
 }
