@@ -1,0 +1,27 @@
+Running main() from ./googletest-main/googletest/src/gtest_main.cc
+[==========] Running 9 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 9 tests from testMatrix
+[ RUN      ] testMatrix.deviceWarmup
+[       OK ] testMatrix.deviceWarmup (2207 ms)
+[ RUN      ] testMatrix.deviceSigmoid
+[       OK ] testMatrix.deviceSigmoid (0 ms)
+[ RUN      ] testMatrix.deviceRepeatColVec
+[       OK ] testMatrix.deviceRepeatColVec (0 ms)
+[ RUN      ] testMatrix.deviceSum
+[       OK ] testMatrix.deviceSum (0 ms)
+[ RUN      ] testMatrix.deviceSoftmax
+[       OK ] testMatrix.deviceSoftmax (0 ms)
+[ RUN      ] testMatrix.deviceCELoss
+[       OK ] testMatrix.deviceCELoss (0 ms)
+[ RUN      ] testMatrix.deviceElemArith
+[       OK ] testMatrix.deviceElemArith (0 ms)
+[ RUN      ] testMatrix.deviceSquare
+[       OK ] testMatrix.deviceSquare (0 ms)
+[ RUN      ] testMatrix.deviceSigmoidBackprop
+[       OK ] testMatrix.deviceSigmoidBackprop (0 ms)
+[----------] 9 tests from testMatrix (2209 ms total)
+
+[----------] Global test environment tear-down
+[==========] 9 tests from 1 test suite ran. (2209 ms total)
+[  PASSED  ] 9 tests.
