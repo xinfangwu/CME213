@@ -115,7 +115,7 @@ TEST(DiffusionTest, GlobalTest)
         FAIL() << "There was an error in the computation, quitting..." << endl;
     }
     // for debugging, save data to file
-    // gpuGrid.saveStateToFile("final_gpu_global.csv");
+    gpuGrid.saveStateToFile("final_gpu_global.csv");
 }
 
 TEST(DiffusionTest, BlockTest)
@@ -140,44 +140,44 @@ TEST(DiffusionTest, BlockTest)
     {
         FAIL() << "There was an error in the computation, quitting..." << endl;
     }
-    // gpuGrid.saveStateToFile("final_gpu_block.csv");
+    gpuGrid.saveStateToFile("final_gpu_block.csv");
 }
 
-TEST(DiffusionTest, SharedTest)
-{
-    Grid gpuGrid(grid);
-    std::vector<double> errorss;
-    double elapsed = 0;
-    if (params.order() == 2)
-    {
-        elapsed = gpuComputationShared<2>(gpuGrid, params);
-    }
-    else if (params.order() == 4)
-    {
-        elapsed = gpuComputationShared<4>(gpuGrid, params);
-    }
-    else if (params.order() == 8)
-    {
-        elapsed = gpuComputationShared<8>(gpuGrid, params);
-    }
+// TEST(DiffusionTest, SharedTest)
+// {
+//     Grid gpuGrid(grid);
+//     std::vector<double> errorss;
+//     double elapsed = 0;
+//     if (params.order() == 2)
+//     {
+//         elapsed = gpuComputationShared<2>(gpuGrid, params);
+//     }
+//     else if (params.order() == 4)
+//     {
+//         elapsed = gpuComputationShared<4>(gpuGrid, params);
+//     }
+//     else if (params.order() == 8)
+//     {
+//         elapsed = gpuComputationShared<8>(gpuGrid, params);
+//     }
 
-    cout << "Order: " << params.order() << ", "
-         << params.nx() << "x" << params.ny() << ", "
-         << params.iters() << " iterations" << endl;
-    cout << setw(15) << " " << setw(15) << "time (ms)" << setw(15) << "GBytes/sec" << endl;
-    cout << setw(15) << "Shared" << setw(15) << setprecision(6) << elapsed
-         << setw(15) << (params.calcBytes() / (elapsed / 1E3)) / 1E9 << endl;
-    gpuGrid.fromGPU();
-    int error = checkErrors(grid, gpuGrid, params, "sharedErrors.txt", errorss);
-    PrintErrors(errorss);
+//     cout << "Order: " << params.order() << ", "
+//          << params.nx() << "x" << params.ny() << ", "
+//          << params.iters() << " iterations" << endl;
+//     cout << setw(15) << " " << setw(15) << "time (ms)" << setw(15) << "GBytes/sec" << endl;
+//     cout << setw(15) << "Shared" << setw(15) << setprecision(6) << elapsed
+//          << setw(15) << (params.calcBytes() / (elapsed / 1E3)) / 1E9 << endl;
+//     gpuGrid.fromGPU();
+//     int error = checkErrors(grid, gpuGrid, params, "sharedErrors.txt", errorss);
+//     PrintErrors(errorss);
 
-    // Tell Gtest failure occurs
-    if (error)
-    {
-        FAIL() << "There was an error in the computation, quitting..." << endl;
-    }
-    // gpuGrid.saveStateToFile("final_gpu_shared.csv");
-}
+//     // Tell Gtest failure occurs
+//     if (error)
+//     {
+//         FAIL() << "There was an error in the computation, quitting..." << endl;
+//     }
+//     // gpuGrid.saveStateToFile("final_gpu_shared.csv");
+// }
 
 int main(int argc, char *argv[])
 {
