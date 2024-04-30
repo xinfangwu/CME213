@@ -71,7 +71,16 @@ template<int order>
 __global__
 void gpuStencilGlobal(float* next, const float* __restrict__ curr, int gx, int nx, int ny,
                 float xcfl, float ycfl) {
-    // TODO
+    // V TODO
+    size_t thread_idx = blockIdx.x * blockDim.x + threadIdx.x;
+    int border = order/2;
+    if(thread_idx < nx * ny){
+        int x = border + (thread_idx % nx);
+        int y = border + (thread_idx / nx);
+        int out = gx * y + x;
+
+        next[out] = Stencil<order>(&curr[out], gx, xcfl, ycfl);
+    }
 }
 
 /**
@@ -91,7 +100,16 @@ double gpuComputationGlobal(Grid& curr_grid, const simParams& params) {
 
     Grid next_grid(curr_grid);
 
-    // TODO: Declare variables/Compute parameters.
+    // V TODO: Declare variables/Compute parameters.
+    int order = params.order();
+    int nx_ = params.nx();
+    int ny_ = params.ny();
+    int gx_ = params.gx();
+    int gy_ = params.gy();
+    double xcfl_ = params.xcfl(); 
+    double ycfl_ = params.ycfl(); 
+    int blocksize = 1024;
+    int gridsize = (nx_*ny_ + blocksize - 1)/blocksize;
 
     event_pair timer;
     start_timer(&timer);
@@ -100,8 +118,16 @@ double gpuComputationGlobal(Grid& curr_grid, const simParams& params) {
         // update the values on the boundary only
         BC.updateBC(next_grid.dGrid_, curr_grid.dGrid_);
 
-        // TODO: Apply stencil.
-
+        // V TODO: Apply stencil.
+        if(order == 2){
+            gpuStencilGlobal<2><<<gridsize, blocksize>>>(next_grid.dGrid_, curr_grid.dGrid_, gx_, nx_, ny_, xcfl_, ycfl_);
+        }
+        else if(order == 4){
+            gpuStencilGlobal<4><<<gridsize, blocksize>>>(next_grid.dGrid_, curr_grid.dGrid_, gx_, nx_, ny_, xcfl_, ycfl_);
+        }
+        else if(order == 8){
+            gpuStencilGlobal<8><<<gridsize, blocksize>>>(next_grid.dGrid_, curr_grid.dGrid_, gx_, nx_, ny_, xcfl_, ycfl_);
+        }
         Grid::swap(curr_grid, next_grid);
     }
 
@@ -135,6 +161,24 @@ __global__
 void gpuStencilBlock(float* next, const float* __restrict__ curr, int gx, int nx, int ny,
                     float xcfl, float ycfl) {
     // TODO
+    size_t thread_idx_x = blockIdx.x * blockDim.x + threadIdx.x; 
+    size_t thread_idx_y = blockIdx.y * blockDim.y + threadIdx.y;
+
+    int border = order/2;
+    int init_y = thread_idx_y * numYPerStep;
+    int end_y = (thread_idx_y + 1) * numYPerStep;
+    
+    if(thread_idx_x < nx){
+        int x = border + thread_idx_x;
+
+        for(int y = init_y; y<end_y; y++){
+            if(y < ny){
+                int out = gx * (y+border) + x;
+                next[out] = Stencil<order>(&curr[out], gx, xcfl, ycfl);
+            }
+        }
+
+    }
 }
 
 /**
@@ -155,8 +199,31 @@ double gpuComputationBlock(Grid& curr_grid, const simParams& params) {
     Grid next_grid(curr_grid);
 
     // TODO: Declare variables/Compute parameters.
-    dim3 threads(0, 0);
-    dim3 blocks(0, 0);
+    // having 64 * 64 (the block size to compute) (it is determined by the size of cache)
+    // 64 * 64 can be loaded to cache in one time
+    // the block size for CUDA is 64 * 8 
+    // so the numYPerStep = 64/8 = 8 
+    
+    // TODO
+    #define numYPerStep 8
+
+    int order = params.order();
+    int nx_ = params.nx();
+    int ny_ = params.ny();
+    int gx_ = params.gx();
+    int gy_ = params.gy();
+    double xcfl_ = params.xcfl(); 
+    double ycfl_ = params.ycfl(); 
+    
+    // TODO
+    int numThread_x = 64; // why recommend 64?
+    int numThread_y = 8;
+
+    int numBlock_x = (nx_ + numThread_x -1)/ numThread_x;
+    int numBlock_y = (ny_ + numThread_y -1)/ numThread_y;
+    
+    dim3 blocksize(numThread_x, numThread_y);
+    dim3 gridsize(numBlock_x, numBlock_y);
 
     event_pair timer;
     start_timer(&timer);
@@ -166,7 +233,15 @@ double gpuComputationBlock(Grid& curr_grid, const simParams& params) {
         BC.updateBC(next_grid.dGrid_, curr_grid.dGrid_);
 
         // TODO: Apply stencil.
-
+        if(order == 2){
+            gpuStencilBlock<2, numYPerStep><<<blocksize, gridsize>>>(next_grid.dGrid_, curr_grid.dGrid_, gx_, nx_, ny_, xcfl_, ycfl_);
+        }
+        else if(order == 4){
+            gpuStencilBlock<4, numYPerStep><<<blocksize, gridsize>>>(next_grid.dGrid_, curr_grid.dGrid_, gx_, nx_, ny_, xcfl_, ycfl_);
+        }
+        else if(order == 8){
+            gpuStencilBlock<8, numYPerStep><<<blocksize, gridsize>>>(next_grid.dGrid_, curr_grid.dGrid_, gx_, nx_, ny_, xcfl_, ycfl_);
+        }
         Grid::swap(curr_grid, next_grid);
     }
 
@@ -233,3 +308,4 @@ double gpuComputationShared(Grid& curr_grid, const simParams& params) {
     check_launch("gpuStencilShared");
     return stop_timer(&timer);
 }
+
