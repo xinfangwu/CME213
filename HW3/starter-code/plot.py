@@ -30,4 +30,4 @@ ax.set_ylabel('Y')
 ax.set_zlabel('Temperature')
 ax.set_zlim(-1, 1)
 
-plt.show()
+plt.savefig("{}.png".format(sys.argv[1]))
