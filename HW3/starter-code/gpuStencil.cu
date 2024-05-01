@@ -209,12 +209,12 @@ double gpuComputationBlock(Grid& curr_grid, const simParams& params) {
     
     // TODO: use a 2D grid with 𝑛𝑥 × 𝑛𝑦/numYPerStep threads total
     // max threads in block = 1024 
-    #define numYPerStep 16
-    int numThread_x = 128;
-    int numThread_y = 8;
+    #define numYPerStep 4
+    int numThread_x = 64;
+    int numThread_y = numThread_x/numYPerStep;
 
     int numBlock_x = (nx_ + numThread_x -1)/ numThread_x;
-    int numBlock_y = (ny_ + numThread_y -1)/ numThread_y;
+    int numBlock_y = (ny_ + numThread_y * numYPerStep -1)/ numThread_y / numYPerStep;
     
     dim3 blocksize(numThread_x, numThread_y);
     dim3 gridsize(numBlock_x, numBlock_y);
@@ -305,7 +305,7 @@ double gpuComputationShared(Grid& curr_grid, const simParams& params) {
     double ycfl_ = params.ycfl(); 
 
     // TODO: Declare variables/Compute parameters.
-    int numThread_x = 64; // why recommend 64?
+    int numThread_x = 64; 
     int numThread_y = 8;
 
     int numBlock_x = (nx_ + numThread_x -1)/ numThread_x;
