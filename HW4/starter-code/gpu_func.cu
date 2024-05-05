@@ -83,32 +83,33 @@ __device__ nn_real &DeviceMatrix::operator()(int row, int col, bool transpose) {
 __global__ void BasicMatMulColumnMajor(DeviceMatrix A, DeviceMatrix B,
                                        DeviceMatrix C, nn_real alpha,
                                        nn_real beta) {
-  // TODO: Implement this kernel
-  int thread_idx_col = blockDim.x * blockIdx.x + threadIdx.x;
-  int thread_idx_row = blockDim.y * blockIdx.y + threadIdx.y;
+  // V TODO: Implement this kernel
+  int row = blockDim.x * blockIdx.x + threadIdx.x;
+  int col = blockDim.y * blockIdx.y + threadIdx.y;
+  
 
-  if(thread_idx_col < C.n_cols && thread_idx_row < C.n_rows){
+  if(col < C.n_cols && row < C.n_rows){
     nn_real sum = 0;
     for(int k =0; k< A.n_cols; k++){
-      sum += A(thread_idx_row, k) * B(k, thread_idx_col);
+      sum += A(row, k) * B(k, col);
     }
-    C(thread_idx_col, thread_idx_row) = alpha * sum + beta * C(thread_idx_col, thread_idx_row);
+    C(row, col) = alpha * sum + beta * C(row, col);
   }
 }
 
 void basicGEMMColumnMajor(DeviceMatrix A, DeviceMatrix B, DeviceMatrix C,
                           nn_real alpha, nn_real beta) {
-  // TODO: Implement this kernel wrapper
+  // V TODO: Implement this kernel wrapper
   // Remember that column major means that consecutive threads compute
   // consecutive elements in a column of the output matrix
 
   // check_launch("basicGEMMColumnMajor");
-  int numThread_x = 32;
-  int numThread_y = 32;
-  int numBlock_x = (C.n_rows + numThread_x - 1)/numThread_x;
-  int numBlock_y = (C.n_cols + numThread_y - 1)/numThread_y;
-  dim3 blockSize(numThread_x, numThread_y);
-  dim3 gridSize(numBlock_x, numBlock_y);
+  int numThread_row = 32;
+  int numThread_col = 32;
+  int numBlock_row = (C.n_rows + numThread_row - 1)/numThread_row;
+  int numBlock_col = (C.n_cols + numThread_col - 1)/numThread_col;
+  dim3 blockSize(numThread_col, numThread_row);
+  dim3 gridSize(numBlock_col, numBlock_row);
 
   // Launch the kernel
   BasicMatMulRowMajor<<<gridSize, blockSize>>>(A, B, C, alpha, beta);
@@ -123,33 +124,33 @@ void basicGEMMColumnMajor(DeviceMatrix A, DeviceMatrix B, DeviceMatrix C,
 __global__ void BasicMatMulRowMajor(DeviceMatrix A, DeviceMatrix B,
                                     DeviceMatrix C, nn_real alpha,
                                     nn_real beta) {
-  // TODO: Implement this kernel
-  int thread_idx_row = blockDim.x * blockIdx.x + threadIdx.x;
-  int thread_idx_col = blockDim.y * blockIdx.y + threadIdx.y;
-
-  if(thread_idx_col < C.n_cols && thread_idx_row < C.n_rows){
+  // V TODO: Implement this kernel
+  int row = blockDim.y * blockIdx.y + threadIdx.y;
+  int col = blockDim.x * blockIdx.x + threadIdx.x;
+  
+  if(col < C.n_cols && row < C.n_rows){
     nn_real sum = 0;
     for(int k =0; k< A.n_cols; k++){
-      sum += A(thread_idx_row, k) * B(k, thread_idx_col);
+      sum += A(row, k) * B(k, col);
     }
-    C(thread_idx_row, thread_idx_col) = alpha * sum + beta * C(thread_idx_row, thread_idx_col);
+    C(row, col) = alpha * sum + beta * C(row, col);
   }
 
 }
 
 void basicGEMMRowMajor(DeviceMatrix A, DeviceMatrix B, DeviceMatrix C,
                        nn_real alpha, nn_real beta) {
-  // TODO: Implement this kernel wrapper
+  // V TODO: Implement this kernel wrapper
   // Remember that row major means that consecutive threads compute
   // consecutive elements in a row of the output matrix
 
   // check_launch("basicGEMMRowMajor");
-  int numThread_x = 32;
-  int numThread_y = 32;
-  int numBlock_x = (C.n_rows + numThread_x - 1)/numThread_x;
-  int numBlock_y = (C.n_cols + numThread_y - 1)/numThread_y;
-  dim3 blockSize(numThread_x, numThread_y);
-  dim3 gridSize(numBlock_x, numBlock_y);
+  int numThread_row = 32;
+  int numThread_col = 32;
+  int numBlock_row = (C.n_rows + numThread_row - 1)/numThread_row;
+  int numBlock_col = (C.n_cols + numThread_col - 1)/numThread_col;
+  dim3 blockSize(numThread_col, numThread_row);
+  dim3 gridSize(numBlock_col, numBlock_row);
 
   // Launch the kernel
   BasicMatMulRowMajor<<<gridSize, blockSize>>>(A, B, C, alpha, beta);
@@ -162,19 +163,60 @@ void basicGEMMRowMajor(DeviceMatrix A, DeviceMatrix B, DeviceMatrix C,
 
 }
 
+#define blockSize_x 16
+#define blockSize_y 16
+
 template <int blockSizeX, int blockSizeY>
 __global__ void SharedMemoryMatMul(DeviceMatrix A, DeviceMatrix B,
                                    DeviceMatrix C, nn_real alpha,
                                    nn_real beta) {
 
   // TODO: Implement this kernel
+  // int blockRow = blockIdx.y;
+  // int blockCol = blockIdx.x;
+  // DeviceMatrix Csub, Asub, Bsub;
+  // Csub = ; // get sub matrix 
+
+  // int row = threadIdx.y;
+  // int col = threadIdx.x;
+
+  // for(int m = 0; m < (A.n_cols / blockSize_x); m++){
+  //   Asub = ; // get A submatrix
+  //   Bsub = ; // get B submatrix
+  //   __shared__ nn_real Asub_shared[blockSize_x][blockSize_y];
+  //   __shared__ nn_real Bsub_shared[blockSize_x][blockSize_y];
+  //   Asub_shared(row, col) = Asub(row, col);
+  //   Bsub_shared(row, col) = Bsub(row, col);
+
+  //   __syncthreads();
+
+  //   nn_real sum = 0;
+  //   for(int e=0; e<blockSize_x; e++){
+  //     sum += Asub_shared(row, e) * Bsub_shared(e, col);
+  //   }
+  //   C(row, col) = alpha * sum + beta * Csub(row, col);
+  // }
 }
 
 void sharedMemoryGEMM(DeviceMatrix A, DeviceMatrix B, DeviceMatrix C,
                       nn_real alpha, nn_real beta) {
   // TODO: Implement this wrapper
+  // check_launch("sharedMemoryGEMM");
+  int numThread_x = blockSize_x;
+  int numThread_y = blockSize_y;
+  int numBlock_x = (C.n_rows + numThread_x - 1)/numThread_x;
+  int numBlock_y = (C.n_cols + numThread_y - 1)/numThread_y;
+  dim3 blockSize(numThread_x, numThread_y);
+  dim3 gridSize(numBlock_x, numBlock_y);
 
-  check_launch("sharedMemoryGEMM");
+  // Launch the kernel
+  SharedMemoryMatMul<blockSize_x, blockSize_y><<<gridSize, blockSize>>>(A, B, C, alpha, beta);
+
+  // Check for errors in kernel launch or during execution
+  cudaError_t err = cudaGetLastError();
+  if (err != cudaSuccess) {
+      printf("CUDA error: %s\n", cudaGetErrorString(err));
+  }
 }
 
 // 32x32 Hierarchical Tiling
