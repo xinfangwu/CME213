@@ -92,7 +92,7 @@ __global__ void BasicMatMulColumnMajor(DeviceMatrix A, DeviceMatrix B,
     for(int k =0; k< A.n_cols; k++){
       sum += A(thread_idx_row, k) * B(k, thread_idx_col);
     }
-    C(thread_idx_col, thread_idx_row, false) = alpha * sum + beta * C(thread_idx_col, thread_idx_row, false);
+    C(thread_idx_col, thread_idx_row) = alpha * sum + beta * C(thread_idx_col, thread_idx_row);
   }
 }
 
@@ -105,8 +105,8 @@ void basicGEMMColumnMajor(DeviceMatrix A, DeviceMatrix B, DeviceMatrix C,
   // check_launch("basicGEMMColumnMajor");
   int numThread_x = 32;
   int numThread_y = 32;
-  int numBlock_x = (A.n_rows + numThread_x - 1)/numThread_x;
-  int numBlock_y = (B.n_cols + numThread_y - 1)/numThread_y;
+  int numBlock_x = (C.n_rows + numThread_x - 1)/numThread_x;
+  int numBlock_y = (C.n_cols + numThread_y - 1)/numThread_y;
   dim3 blockSize(numThread_x, numThread_y);
   dim3 gridSize(numBlock_x, numBlock_y);
 
