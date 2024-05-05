@@ -84,6 +84,16 @@ __global__ void BasicMatMulColumnMajor(DeviceMatrix A, DeviceMatrix B,
                                        DeviceMatrix C, nn_real alpha,
                                        nn_real beta) {
   // TODO: Implement this kernel
+  int thread_idx_col = blockDim.x * blockIdx.x + threadIdx.x;
+  int thread_idx_row = blockDim.y * blockIdx.y + threadIdx.y;
+
+  if(thread_idx_col < C.n_cols && thread_idx_row < C.n_rows){
+    nn_real sum = 0;
+    for(int k =0; k< A.n_cols; k++){
+      sum += A(thread_idx_row, k) * B(k, thread_idx_col);
+    }
+    C(thread_idx_col, thread_idx_row, false) = alpha * sum + beta * C(thread_idx_col, thread_idx_row, false);
+  }
 }
 
 void basicGEMMColumnMajor(DeviceMatrix A, DeviceMatrix B, DeviceMatrix C,
@@ -92,13 +102,39 @@ void basicGEMMColumnMajor(DeviceMatrix A, DeviceMatrix B, DeviceMatrix C,
   // Remember that column major means that consecutive threads compute
   // consecutive elements in a column of the output matrix
 
-  check_launch("basicGEMMColumnMajor");
+  // check_launch("basicGEMMColumnMajor");
+  int numThread_x = 32;
+  int numThread_y = 32;
+  int numBlock_x = (A.n_rows + numThread_x - 1)/numThread_x;
+  int numBlock_y = (B.n_cols + numThread_y - 1)/numThread_y;
+  dim3 blockSize(numThread_x, numThread_y);
+  dim3 gridSize(numBlock_x, numBlock_y);
+
+  // Launch the kernel
+  BasicMatMulRowMajor<<<gridSize, blockSize>>>(A, B, C, alpha, beta);
+
+  // Check for errors in kernel launch or during execution
+  cudaError_t err = cudaGetLastError();
+  if (err != cudaSuccess) {
+      printf("CUDA error: %s\n", cudaGetErrorString(err));
+  }
 }
 
 __global__ void BasicMatMulRowMajor(DeviceMatrix A, DeviceMatrix B,
                                     DeviceMatrix C, nn_real alpha,
                                     nn_real beta) {
   // TODO: Implement this kernel
+  int thread_idx_row = blockDim.x * blockIdx.x + threadIdx.x;
+  int thread_idx_col = blockDim.y * blockIdx.y + threadIdx.y;
+
+  if(thread_idx_col < C.n_cols && thread_idx_row < C.n_rows){
+    nn_real sum = 0;
+    for(int k =0; k< A.n_cols; k++){
+      sum += A(thread_idx_row, k) * B(k, thread_idx_col);
+    }
+    C(thread_idx_row, thread_idx_col) = alpha * sum + beta * C(thread_idx_row, thread_idx_col);
+  }
+
 }
 
 void basicGEMMRowMajor(DeviceMatrix A, DeviceMatrix B, DeviceMatrix C,
@@ -107,7 +143,23 @@ void basicGEMMRowMajor(DeviceMatrix A, DeviceMatrix B, DeviceMatrix C,
   // Remember that row major means that consecutive threads compute
   // consecutive elements in a row of the output matrix
 
-  check_launch("basicGEMMRowMajor");
+  // check_launch("basicGEMMRowMajor");
+  int numThread_x = 32;
+  int numThread_y = 32;
+  int numBlock_x = (C.n_rows + numThread_x - 1)/numThread_x;
+  int numBlock_y = (C.n_cols + numThread_y - 1)/numThread_y;
+  dim3 blockSize(numThread_x, numThread_y);
+  dim3 gridSize(numBlock_x, numBlock_y);
+
+  // Launch the kernel
+  BasicMatMulRowMajor<<<gridSize, blockSize>>>(A, B, C, alpha, beta);
+
+  // Check for errors in kernel launch or during execution
+  cudaError_t err = cudaGetLastError();
+  if (err != cudaSuccess) {
+      printf("CUDA error: %s\n", cudaGetErrorString(err));
+  }
+
 }
 
 template <int blockSizeX, int blockSizeY>

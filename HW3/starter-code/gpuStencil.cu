@@ -304,12 +304,13 @@ double gpuComputationShared(Grid& curr_grid, const simParams& params) {
     double xcfl_ = params.xcfl(); 
     double ycfl_ = params.ycfl(); 
 
-    // TODO: Declare variables/Compute parameters.
+    // TODO: Declare variables/Compute parameters.]
+    # define side 64
     int numThread_x = 64; 
     int numThread_y = 8;
 
-    int numBlock_x = (nx_ + numThread_x -1)/ numThread_x;
-    int numBlock_y = (ny_ + numThread_y -1)/ numThread_y;
+    int numBlock_x = (gx_ + numThread_x -1)/ numThread_x;
+    int numBlock_y = (gy_ + numThread_y -1)/ numThread_y;
 
     dim3 blocksize(numThread_x, numThread_y);
     dim3 gridsize(numBlock_x, numBlock_y);
@@ -322,8 +323,16 @@ double gpuComputationShared(Grid& curr_grid, const simParams& params) {
         BC.updateBC(next_grid.dGrid_, curr_grid.dGrid_);
 
         // TODO: Apply stencil.
-        gpuStencilShared<side, order_><<<blocksize, gridsize>>>(next_grid.dGrid_, curr_grid.dGrid_, gx_, nx_, ny_, xcfl_, ycfl_)
-        cudaDeviceSynchronize();
+        if(order == 2){
+            gpuStencilShared<side, 2><<<gridsize, blocksize>>>(next_grid.dGrid_, curr_grid.dGrid_, gx_, gy_, xcfl_, ycfl_);
+        }
+        else if(order == 4){
+            gpuStencilShared<side, 4><<<gridsize, blocksize>>>(next_grid.dGrid_, curr_grid.dGrid_, gx_, gy_, xcfl_, ycfl_);
+        }
+        else if(order == 8){
+            gpuStencilShared<side, 8><<<gridsize, blocksize>>>(next_grid.dGrid_, curr_grid.dGrid_, gx_, gy_, xcfl_, ycfl_);
+        }
+
         Grid::swap(curr_grid, next_grid);
     }
 
