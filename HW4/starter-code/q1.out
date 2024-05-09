@@ -1,5 +1,6 @@
-Starting at Sat May  4 17:52:18 PDT 2024
+Starting at Thu May  9 02:58:05 PDT 2024
 
+nvc++ -isystem ./googletest-main/googletest/include -O2 -tp=px -gpu=cuda12.3,cc75,sm_75 -cuda --diag_suppress unrecognized_attribute -I./armadillo-12.8.2/include -I./cuda_helper -c main_q1.cu
 nvc++ -isystem ./googletest-main/googletest/include -O2 -tp=px -gpu=cuda12.3,cc75,sm_75 -cuda --diag_suppress unrecognized_attribute -I./armadillo-12.8.2/include -I./cuda_helper -c gpu_func.cu 
 nvc++ main_q1.o gpu_func.o gtest_main.a gemm_test.o -o main_q1 -gpu=cuda12.3,cc75,sm_75 -cuda -lblas -L/home/cme213/software/nvidia-hpc-sdk/2024_24.1/Linux_x86_64/24.1/math_libs/12.3/targets/x86_64-linux/lib -lcublas
 nvc++ main_q2.o gpu_func.o gtest_main.a gemm_test.o -o main_q2 -gpu=cuda12.3,cc75,sm_75 -cuda -lblas -L/home/cme213/software/nvidia-hpc-sdk/2024_24.1/Linux_x86_64/24.1/math_libs/12.3/targets/x86_64-linux/lib -lcublas
@@ -21,29 +22,29 @@ Testing row major basicGEMM
 
 GEMM: M = 37; N = 41; K = 43
 Relative Inf error = 0
-Average of 10 runs for cublas:	1.29344e-05 seconds
-Average of 10 runs for myGEMM:	1.58592e-05 seconds
-Reference GEMM is		1.22613 times faster
-[       OK ] basicGEMMRowMajor.small (2301 ms)
+Average of 10 runs for cublas:	1.26624e-05 seconds
+Average of 10 runs for myGEMM:	2.27744e-05 seconds
+Reference GEMM is		1.79858 times faster
+[       OK ] basicGEMMRowMajor.small (2310 ms)
 [ RUN      ] basicGEMMRowMajor.medium
 Testing row major basicGEMM
 
 GEMM: M = 599; N = 433; K = 751
 Relative Inf error = 0
-Average of 10 runs for cublas:	5.74848e-05 seconds
-Average of 10 runs for myGEMM:	0.000663866 seconds
-Reference GEMM is		11.5485 times faster
-[       OK ] basicGEMMRowMajor.medium (22 ms)
+Average of 10 runs for cublas:	5.86976e-05 seconds
+Average of 10 runs for myGEMM:	0.00160483 seconds
+Reference GEMM is		27.3406 times faster
+[       OK ] basicGEMMRowMajor.medium (33 ms)
 [ RUN      ] basicGEMMRowMajor.large
 Testing row major basicGEMM
 
 GEMM: M = 7817; N = 7919; K = 6869
 Relative Inf error = 0
-Average of 10 runs for cublas:	0.0541057 seconds
-Average of 10 runs for myGEMM:	1.71826 seconds
-Reference GEMM is		31.7574 times faster
-[       OK ] basicGEMMRowMajor.large (22027 ms)
-[----------] 3 tests from basicGEMMRowMajor (24351 ms total)
+Average of 10 runs for cublas:	0.054737 seconds
+Average of 10 runs for myGEMM:	2.63052 seconds
+Reference GEMM is		48.0575 times faster
+[       OK ] basicGEMMRowMajor.large (31127 ms)
+[----------] 3 tests from basicGEMMRowMajor (33472 ms total)
 
 [----------] 3 tests from basicGEMMColumnMajor
 [ RUN      ] basicGEMMColumnMajor.small
@@ -51,30 +52,30 @@ Testing column major basicGEMM
 
 GEMM: M = 37; N = 41; K = 43
 Relative Inf error = 0
-Average of 10 runs for cublas:	1.10464e-05 seconds
-Average of 10 runs for myGEMM:	1.25824e-05 seconds
-Reference GEMM is		1.13905 times faster
+Average of 10 runs for cublas:	1.09056e-05 seconds
+Average of 10 runs for myGEMM:	1.29984e-05 seconds
+Reference GEMM is		1.1919 times faster
 [       OK ] basicGEMMColumnMajor.small (1 ms)
 [ RUN      ] basicGEMMColumnMajor.medium
 Testing column major basicGEMM
 
 GEMM: M = 599; N = 433; K = 751
 Relative Inf error = 0
-Average of 10 runs for cublas:	4.25408e-05 seconds
-Average of 10 runs for myGEMM:	0.000509926 seconds
-Reference GEMM is		11.9868 times faster
-[       OK ] basicGEMMColumnMajor.medium (27 ms)
+Average of 10 runs for cublas:	4.56384e-05 seconds
+Average of 10 runs for myGEMM:	0.000514426 seconds
+Reference GEMM is		11.2718 times faster
+[       OK ] basicGEMMColumnMajor.medium (26 ms)
 [ RUN      ] basicGEMMColumnMajor.large
 Testing column major basicGEMM
 
 GEMM: M = 7817; N = 7919; K = 6869
 Relative Inf error = 0
-Average of 10 runs for cublas:	0.0547953 seconds
-Average of 10 runs for myGEMM:	1.73745 seconds
-Reference GEMM is		31.7081 times faster
-[       OK ] basicGEMMColumnMajor.large (21325 ms)
-[----------] 3 tests from basicGEMMColumnMajor (21354 ms total)
+Average of 10 runs for cublas:	0.0558691 seconds
+Average of 10 runs for myGEMM:	1.75694 seconds
+Reference GEMM is		31.4475 times faster
+[       OK ] basicGEMMColumnMajor.large (21534 ms)
+[----------] 3 tests from basicGEMMColumnMajor (21562 ms total)
 
 [----------] Global test environment tear-down
-[==========] 7 tests from 3 test suites ran. (45717 ms total)
+[==========] 7 tests from 3 test suites ran. (55034 ms total)
 [  PASSED  ] 7 tests.

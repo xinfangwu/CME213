@@ -108,11 +108,11 @@ void basicGEMMColumnMajor(DeviceMatrix A, DeviceMatrix B, DeviceMatrix C,
   int numThread_col = 32;
   int numBlock_row = (C.n_rows + numThread_row - 1)/numThread_row;
   int numBlock_col = (C.n_cols + numThread_col - 1)/numThread_col;
-  dim3 blockSize(numThread_col, numThread_row);
-  dim3 gridSize(numBlock_col, numBlock_row);
+  dim3 blockSize(numThread_row, numThread_col);
+  dim3 gridSize(numBlock_row, numBlock_col);
 
   // Launch the kernel
-  BasicMatMulRowMajor<<<gridSize, blockSize>>>(A, B, C, alpha, beta);
+  BasicMatMulColumnMajor<<<gridSize, blockSize>>>(A, B, C, alpha, beta);
 
   // Check for errors in kernel launch or during execution
   cudaError_t err = cudaGetLastError();
@@ -163,15 +163,15 @@ void basicGEMMRowMajor(DeviceMatrix A, DeviceMatrix B, DeviceMatrix C,
 
 }
 
-#define blockSize_x 16
-#define blockSize_y 16
+#define blockSize_x 32
+#define blockSize_y 32
 
 template <int blockSizeX, int blockSizeY>
 __global__ void SharedMemoryMatMul(DeviceMatrix A, DeviceMatrix B,
                                    DeviceMatrix C, nn_real alpha,
                                    nn_real beta) {
 
-  // TODO: Implement this kernel
+  // V TODO: Implement this kernel
   // x-> col, y -> row
   int row = blockDim.y * blockIdx.y + threadIdx.y;
   int col = blockDim.x * blockIdx.x + threadIdx.x;
@@ -218,7 +218,7 @@ __global__ void SharedMemoryMatMul(DeviceMatrix A, DeviceMatrix B,
 
 void sharedMemoryGEMM(DeviceMatrix A, DeviceMatrix B, DeviceMatrix C,
                       nn_real alpha, nn_real beta) {
-  // TODO: Implement this wrapper
+  // V TODO: Implement this wrapper
   // check_launch("sharedMemoryGEMM");
   // x -> col, y -> row
   int numThread_x = blockSize_x;

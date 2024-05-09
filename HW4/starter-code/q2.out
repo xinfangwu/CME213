@@ -1,0 +1,41 @@
+Starting at Thu May  9 01:06:00 PDT 2024
+
+make: Nothing to be done for 'default'.
+
+Output from main_q2
+----------------
+Running main() from ./googletest-main/googletest/src/gtest_main.cc
+[==========] Running 4 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 4 tests from SharedGEMMTest
+[ RUN      ] SharedGEMMTest.deviceWarmup
+[       OK ] SharedGEMMTest.deviceWarmup (0 ms)
+[ RUN      ] SharedGEMMTest.small
+
+GEMM: M = 37; N = 41; K = 43
+Relative Inf error = 0
+Average of 10 runs for cublas:	1.30848e-05 seconds
+Average of 10 runs for myGEMM:	1.46592e-05 seconds
+Reference GEMM is		1.12032 times faster
+[       OK ] SharedGEMMTest.small (2325 ms)
+[ RUN      ] SharedGEMMTest.medium
+
+GEMM: M = 599; N = 433; K = 751
+Relative Inf error = 0
+Average of 10 runs for cublas:	5.77568e-05 seconds
+Average of 10 runs for myGEMM:	0.00042425 seconds
+Reference GEMM is		7.34545 times faster
+[       OK ] SharedGEMMTest.medium (20 ms)
+[ RUN      ] SharedGEMMTest.large
+
+GEMM: M = 7817; N = 7919; K = 6869
+Relative Inf error = 0
+Average of 10 runs for cublas:	0.0547244 seconds
+Average of 10 runs for myGEMM:	0.621805 seconds
+Reference GEMM is		11.3625 times faster
+[       OK ] SharedGEMMTest.large (9066 ms)
+[----------] 4 tests from SharedGEMMTest (11411 ms total)
+
+[----------] Global test environment tear-down
+[==========] 4 tests from 1 test suite ran. (11411 ms total)
+[  PASSED  ] 4 tests.
