@@ -248,7 +248,68 @@ __global__ void TiledMatMul(DeviceMatrix A, bool transa, DeviceMatrix B,
                             bool transb, DeviceMatrix C, nn_real alpha,
                             nn_real beta) {
   // TODO: Implement this kernel
+  // x-> col, y -> row
+  // int row = blockDim.y * blockIdx.y + threadIdx.y;
+  // int col = blockDim.x * blockIdx.x + threadIdx.x;
+  // __shared__ nn_real As[blockItemsM][blockItemsK];
+  // __shared__ nn_real Bs[blockItemsK][blockItemsN];
+  // nn_real Cvalue = 0;
+
+  // int K = A.n_cols;
+
+  // // First, Load A tile and B tile into shared memory 
+  // // Matrix -> Tile
+  // for(int kblock=0; kblock<((K + blockItemsK -1)/blockItemsK); kblock++){
+
+  //   int in_col = kblock * blockItemsK + threadIdx.x;
+  //   if(in_col < A.n_cols && row < A.n_rows){
+  //     As[threadIdx.y][threadIdx.x] = A(row, in_col);
+  //   }
+  //   else{
+  //     As[threadIdx.y][threadIdx.x] = 0;
+  //   }
+
+  //   // load to shared Bs
+  //   // one thread one element 
+  //   int in_row = kblock * blockItemsK + threadIdx.y;
+  //   if(in_row < B.n_rows && col < B.n_cols){
+  //     Bs[threadIdx.y][threadIdx.x] = B(in_row, col);
+  //   }
+  //   else{
+  //     Bs[threadIdx.y][threadIdx.x] = 0;
+  //   }
+
+  //   __syncthreads();
+
+  //   // Second, Tile -> Warp 
+  //   int WarpSizeY = 16;
+  //   int WarpSizeX = 8;
+  //   int warpRow = threadIdx.y / WarpSizeY;
+  //   int warpCol = threadIdx.x / WarpSizeX;
+  //   // int laneIndex = threadIdx.y % WarpSize * WarpSize + threadIdx.x % WarpSize;
+
+  //   #pragma unroll
+  //   for (int k = 0; k < blockItemsK; k++) {
+  //       nn_real frag_a = As[warpRow * WarpSize + laneIndex / ThreadItemsX][k];
+  //       nn_real frag_b = Bs[k][warpCol * WarpSize + laneIndex % ThreadItemsX];
+  //       #pragma unroll
+  //       for (int thread_x = 0; thread_x < ThreadItemsX; ++thread_x) {
+  //           #pragma unroll
+  //           for (int thread_y = 0; thread_y < ThreadItemsY; ++thread_y) {
+  //               Cvalue += frag_a[y] * frag_b[x];
+  //           }
+  //       }
+  //   }
+  //   __syncthreads();
+
+  // }
+
+  // if (row < C.n_rows && col < C.n_cols){
+  //   C(row, col) = alpha * Cvalue + beta * C(row, col);
+  // }
+  // check_launch("tiledGEMM");
 }
+
 
 // wrapper for MatMulTile_32_32
 void tiledGEMM(DeviceMatrix A, DeviceMatrix B, DeviceMatrix C, nn_real alpha,
