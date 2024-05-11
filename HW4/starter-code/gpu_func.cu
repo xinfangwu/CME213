@@ -145,8 +145,8 @@ void basicGEMMRowMajor(DeviceMatrix A, DeviceMatrix B, DeviceMatrix C,
   // consecutive elements in a row of the output matrix
 
   // check_launch("basicGEMMRowMajor");
-  int numThread_row = 32;
-  int numThread_col = 32;
+  int numThread_row = 128;
+  int numThread_col = 8;
   int numBlock_row = (C.n_rows + numThread_row - 1)/numThread_row;
   int numBlock_col = (C.n_cols + numThread_col - 1)/numThread_col;
   dim3 blockSize(numThread_col, numThread_row);
