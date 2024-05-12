@@ -1,0 +1,180 @@
+Starting at Sat May 11 02:14:20 PDT 2024
+
+make: Nothing to be done for 'default'.
+
+Output from main_q1
+----------------
+Running main() from ./googletest-main/googletest/src/gtest_main.cc
+[==========] Running 7 tests from 3 test suites.
+[----------] Global test environment set-up.
+[----------] 1 test from testWarmup
+[ RUN      ] testWarmup.deviceWarmup
+[       OK ] testWarmup.deviceWarmup (0 ms)
+[----------] 1 test from testWarmup (0 ms total)
+
+[----------] 3 tests from basicGEMMRowMajor
+[ RUN      ] basicGEMMRowMajor.small
+Testing row major basicGEMM
+
+GEMM: M = 37; N = 41; K = 43
+Relative Inf error = 0
+Average of 10 runs for cublas:	1.2864e-05 seconds
+Average of 10 runs for myGEMM:	1.60736e-05 seconds
+Reference GEMM is		1.2495 times faster
+[       OK ] basicGEMMRowMajor.small (1745 ms)
+[ RUN      ] basicGEMMRowMajor.medium
+Testing row major basicGEMM
+
+GEMM: M = 599; N = 433; K = 751
+Relative Inf error = 0
+Average of 10 runs for cublas:	5.72736e-05 seconds
+Average of 10 runs for myGEMM:	0.000752525 seconds
+Reference GEMM is		13.1391 times faster
+[       OK ] basicGEMMRowMajor.medium (24 ms)
+[ RUN      ] basicGEMMRowMajor.large
+Testing row major basicGEMM
+
+GEMM: M = 7817; N = 7919; K = 6869
+Relative Inf error = 0
+Average of 10 runs for cublas:	0.0547604 seconds
+Average of 10 runs for myGEMM:	1.78152 seconds
+Reference GEMM is		32.533 times faster
+[       OK ] basicGEMMRowMajor.large (22132 ms)
+[----------] 3 tests from basicGEMMRowMajor (23903 ms total)
+
+[----------] 3 tests from basicGEMMColumnMajor
+[ RUN      ] basicGEMMColumnMajor.small
+Testing column major basicGEMM
+
+GEMM: M = 37; N = 41; K = 43
+Relative Inf error = 0
+Average of 10 runs for cublas:	1.08736e-05 seconds
+Average of 10 runs for myGEMM:	1.30048e-05 seconds
+Reference GEMM is		1.196 times faster
+[       OK ] basicGEMMColumnMajor.small (1 ms)
+[ RUN      ] basicGEMMColumnMajor.medium
+Testing column major basicGEMM
+
+GEMM: M = 599; N = 433; K = 751
+Relative Inf error = 0
+Average of 10 runs for cublas:	4.74336e-05 seconds
+Average of 10 runs for myGEMM:	0.000525155 seconds
+Reference GEMM is		11.0714 times faster
+[       OK ] basicGEMMColumnMajor.medium (26 ms)
+[ RUN      ] basicGEMMColumnMajor.large
+Testing column major basicGEMM
+
+GEMM: M = 7817; N = 7919; K = 6869
+Relative Inf error = 0
+Average of 10 runs for cublas:	0.0559057 seconds
+Average of 10 runs for myGEMM:	1.78183 seconds
+Reference GEMM is		31.8721 times faster
+[       OK ] basicGEMMColumnMajor.large (21791 ms)
+[----------] 3 tests from basicGEMMColumnMajor (21820 ms total)
+
+[----------] Global test environment tear-down
+[==========] 7 tests from 3 test suites ran. (45723 ms total)
+[  PASSED  ] 7 tests.
+
+Output from main_q2
+----------------
+Running main() from ./googletest-main/googletest/src/gtest_main.cc
+[==========] Running 4 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 4 tests from SharedGEMMTest
+[ RUN      ] SharedGEMMTest.deviceWarmup
+[       OK ] SharedGEMMTest.deviceWarmup (0 ms)
+[ RUN      ] SharedGEMMTest.small
+
+GEMM: M = 37; N = 41; K = 43
+Relative Inf error = 0
+Average of 10 runs for cublas:	1.21696e-05 seconds
+Average of 10 runs for myGEMM:	1.49664e-05 seconds
+Reference GEMM is		1.22982 times faster
+[       OK ] SharedGEMMTest.small (2215 ms)
+[ RUN      ] SharedGEMMTest.medium
+
+GEMM: M = 599; N = 433; K = 751
+Relative Inf error = 0
+Average of 10 runs for cublas:	5.77856e-05 seconds
+Average of 10 runs for myGEMM:	0.000433098 seconds
+Reference GEMM is		7.49491 times faster
+[       OK ] SharedGEMMTest.medium (18 ms)
+[ RUN      ] SharedGEMMTest.large
+
+GEMM: M = 7817; N = 7919; K = 6869
+Relative Inf error = 0
+Average of 10 runs for cublas:	0.0570365 seconds
+Average of 10 runs for myGEMM:	0.664721 seconds
+Reference GEMM is		11.6543 times faster
+[       OK ] SharedGEMMTest.large (9556 ms)
+[----------] 4 tests from SharedGEMMTest (11790 ms total)
+
+[----------] Global test environment tear-down
+[==========] 4 tests from 1 test suite ran. (11790 ms total)
+[  PASSED  ] 4 tests.
+
+Output from main_q3
+----------------
+Running main() from ./googletest-main/googletest/src/gtest_main.cc
+[==========] Running 4 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 4 tests from TiledGEMMTest
+[ RUN      ] TiledGEMMTest.deviceWarmup
+[       OK ] TiledGEMMTest.deviceWarmup (0 ms)
+[ RUN      ] TiledGEMMTest.small
+
+GEMM: M = 37; N = 41; K = 43
+Relative Inf error = 1.00052
+gemm_test.cpp:35: Failure
+Expected equality of these values:
+  reldiff
+    Which is: 1.00052035
+  0.
+    Which is: 0
+
+Average of 10 runs for cublas:	1.25888e-05 seconds
+Average of 10 runs for myGEMM:	6.7904e-06 seconds
+Reference GEMM is		0.5394 times faster
+[  FAILED  ] TiledGEMMTest.small (2208 ms)
+[ RUN      ] TiledGEMMTest.medium
+
+GEMM: M = 599; N = 433; K = 751
+Relative Inf error = 1.00001
+gemm_test.cpp:35: Failure
+Expected equality of these values:
+  reldiff
+    Which is: 1.0000124
+  0.
+    Which is: 0
+
+Average of 10 runs for cublas:	5.448e-05 seconds
+Average of 10 runs for myGEMM:	6.448e-06 seconds
+Reference GEMM is		0.118355 times faster
+[  FAILED  ] TiledGEMMTest.medium (13 ms)
+[ RUN      ] TiledGEMMTest.large
+
+GEMM: M = 7817; N = 7919; K = 6869
+Relative Inf error = 1
+gemm_test.cpp:35: Failure
+Expected equality of these values:
+  reldiff
+    Which is: 1.00000262
+  0.
+    Which is: 0
+
+Average of 10 runs for cublas:	0.0570858 seconds
+Average of 10 runs for myGEMM:	8.5376e-06 seconds
+Reference GEMM is		0.000149557 times faster
+[  FAILED  ] TiledGEMMTest.large (2209 ms)
+[----------] 4 tests from TiledGEMMTest (4431 ms total)
+
+[----------] Global test environment tear-down
+[==========] 4 tests from 1 test suite ran. (4431 ms total)
+[  PASSED  ] 1 test.
+[  FAILED  ] 3 tests, listed below:
+[  FAILED  ] TiledGEMMTest.small
+[  FAILED  ] TiledGEMMTest.medium
+[  FAILED  ] TiledGEMMTest.large
+
+ 3 FAILED TESTS
