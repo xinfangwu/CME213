@@ -205,8 +205,12 @@ GPUGrads::GPUGrads(const NeuralNetwork &nn)
    * allocated with gpu_mem_pool will be used to set up dW and db. Calculate the
    * total number of elements that we need to allocate memory for.
    */
-  gpu_mem_pool =
-      std::make_shared<DeviceAllocator>(total_size * sizeof(nn_real));
+  for (size_t i = 0; i < nn.num_layers - 1; i++) {
+    total_size += nn.H[i] * nn.H[i + 1]; 
+    total_size += nn.H[i + 1];           
+  }
+
+  gpu_mem_pool = std::make_shared<DeviceAllocator>(total_size * sizeof(nn_real));
   nn_real *gpu_mem_pool_start = gpu_mem_pool.get()->memptr();
 
   size_t offset = 0;
@@ -224,6 +228,16 @@ GPUGrads::GPUGrads(const NeuralNetwork &nn)
    * The template pseudo-code looks like:
    * dW[...] = DeviceMatrix(gpu_mem_pool_start + ..., n_rows, n_cols);
    */
+
+  for (size_t i = 0; i < nn.num_layers; ++i) {
+
+    dW[i] = DeviceMatrix(gpu_mem_pool_start + offset, nn.H[i], nn.H[i + 1]);
+    offset += nn.H[i] * nn.H[i + 1];
+
+    
+    db[i] = DeviceMatrix(gpu_mem_pool_start + offset, nn.H[i + 1], 1);
+    offset += nn.H[i + 1];
+  }
 }
 
 DataParallelNeuralNetwork::DataParallelNeuralNetwork(NeuralNetwork &nn,
@@ -239,6 +253,37 @@ DataParallelNeuralNetwork::DataParallelNeuralNetwork(NeuralNetwork &nn,
    * will need to correctly initialize at least: cache.a, cache.z, W[], b[], and
    * reg.
    */
+
+  // Initialize regularization parameter and learning rate
+  this->reg = reg;
+  this->lr = lr;
+  this->num_procs = num_procs;
+
+  int numLayer = nn.num_layers;
+  assert(numLayer == nn.W.size());
+  assert(numLayer == nn.b.size());
+
+  W.resize(numLayer);
+  b.resize(numLayer);
+  // Initialize weights and biases from the given neural network model
+  for(size_t i=0; i<numLayer; i++){
+    // weights
+    DeviceMatrix cpuW(nn.W[i]);
+    W[i] = DeviceMatrix(nn.W[i].n_rows, nn.W[i].n_cols);
+    W[i] = cpuW;
+
+    // biases
+    DeviceMatrix cpub(nn.b[i]);
+    b[i] = DeviceMatrix(nn.b[i].n_rows, nn.b[i].n_cols);
+    b[i] = cpub;
+  }
+
+  // Initialize cache 
+  cache.a.resize(numLayer); 
+  cache.z.resize(numLayer);
+
+  // Initializw grad
+  grads = GPUGrads(nn);
 }
 
 void DataParallelNeuralNetwork::forward(const DeviceMatrix &X)
@@ -250,6 +295,49 @@ void DataParallelNeuralNetwork::forward(const DeviceMatrix &X)
    * any new CUDA kernel.
    * Examples of kernels to use: DRepeatColVec, tiledGEMM, DSigmoid, DSoftmax.
    */
+
+
+  // assert(X.n_rows == nn.W[0].n_cols);
+  // cache.X = X;
+  // int N = X.n_cols;
+  assert(X.n_rows == this->W[0].n_cols);
+  cache.X = X;
+
+  // Layer 1
+  // arma::Mat<nn_real> z1 = nn.W[0] * X + arma::repmat(nn.b[0], 1, N); 
+  // cache.z[0] = z1;
+  assert(this->b[0].n_cols == 1);
+  DeviceMatrix z1(this->W[0].n_rows, X.n_cols);
+  DRepeatColVec(this->b[0], z1, X.n_cols);
+  tiledGEMM(this->W[0], false, X, false, z1, 1, 1);
+  cache.z[0] = z1;
+
+  // arma::Mat<nn_real> a1;
+  // sigmoid(z1, a1);
+  // cache.a[0] = a1;
+  DeviceMatrix a1(z1.n_rows, z1.n_cols);
+  assert(a1.n_cols == z1.n_cols && a1.n_rows == z1.n_rows);
+  DSigmoid(z1, a1);
+  cache.a[0] = a1;
+
+  // assert(a1.n_rows == nn.W[1].n_cols);
+  // arma::Mat<nn_real> z2 = nn.W[1] * a1 + arma::repmat(nn.b[1], 1, N);
+  // cache.z[1] = z2;
+  assert(cache.a[0].n_rows == this->W[1].n_cols);
+  assert(this->b[1].n_cols == 1);
+  DeviceMatrix z2(this->W[1].n_rows, a1.n_cols);
+  DRepeatColVec(this->b[1], z2, a1.n_cols);
+  tiledGEMM(this->W[1], false, a1, false, z2, 1, 1);
+  cache.z[1] = z2;
+
+  // arma::Mat<nn_real> a2;
+  // softmax(z2, a2);
+  // cache.a[1] = cache.yc = a2;
+  DeviceMatrix a2(z2.n_rows, z2.n_cols);
+  DSoftmax(z2, a2, 0);
+  cache.a[1] = a2;
+  cache.yc = a2;
+
 }
 
 nn_real DataParallelNeuralNetwork::loss(const DeviceMatrix &y, nn_real weight)
@@ -294,4 +382,19 @@ void DataParallelNeuralNetwork::to_cpu(NeuralNetwork &nn)
    * TODO: Implement this function.
    * HINT: Use DeviceMatrix::to_cpu. You need to copy W[] and b[].
    */
+
+  nn.W.resize(W.size());
+  nn.b.resize(b.size());
+  // move weights from gpu to cpu 
+  for (size_t i = 0; i < nn.W.size(); i++) {
+    assert(W[i].n_cols == nn.W[i].n_cols && W[i].n_rows == nn.W[i].n_rows);
+    W[i].to_cpu(nn.W[i]); 
+  }
+
+  // move biases from gpu to cpu
+  for (size_t i = 0; i < nn.b.size(); i++) {
+    assert(b[i].n_cols == nn.b[i].n_cols && b[i].n_rows == nn.b[i].n_rows);
+    b[i].to_cpu(nn.b[i]); 
+  }
+
 }
