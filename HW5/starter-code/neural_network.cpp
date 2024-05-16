@@ -284,6 +284,8 @@ DataParallelNeuralNetwork::DataParallelNeuralNetwork(NeuralNetwork &nn,
 
   // Initializw grad
   grads = GPUGrads(nn);
+  grads.dW.resize(numLayer);
+  grads.db.resize(numLayer);
 }
 
 void DataParallelNeuralNetwork::forward(const DeviceMatrix &X)
@@ -400,6 +402,44 @@ void DataParallelNeuralNetwork::backward(const DeviceMatrix &y,
    * Examples of CUDA kernels to use: DElemArith, to_gpu, tiledGEMM, DSum,
    * DSigmoidBackprop.
    */
+
+  // arma::Mat<nn_real> diff = (1.0 / N) * (bpcache.yc - y);
+  DeviceMatrix diff(this->cache.yc.n_rows, this->cache.yc.n_cols);
+  assert(this->cache.yc.n_rows == diff.n_rows && this->cache.yc.n_cols == diff.n_cols);
+  this->cache.yc.to_gpu(diff);
+  DElemArith(diff, y, grad_weight, -1);
+
+  // bpgrads.dW[1] = diff * bpcache.a[0].t() + reg * nn.W[1];
+  DeviceMatrix dW1(this->W[1].n_rows, this->W[1].n_cols);
+  this->W[1].to_gpu(dW1);
+  tiledGEMM(diff, false, this->cache.a[0], true, dW1, 1, reg);
+  this->grads.dW[1] = dW1;
+
+  // bpgrads.db[1] = arma::sum(diff, 1);
+  DeviceMatrix db1(this->b[1].n_rows, this->b[1].n_cols);
+  DSum(diff, db1, 1, 1);
+  this->grads.db[1] = db1;
+
+  // arma::Mat<nn_real> da1 = nn.W[1].t() * diff;
+  DeviceMatrix da1(cache.a[0].n_rows, cache.a[0].n_cols);
+  tiledGEMM(this->W[1], true, diff, false, da1, 1, 0);
+
+  // arma::Mat<nn_real> dz1 = da1 % bpcache.a[0] % (1 - bpcache.a[0]);
+  DeviceMatrix dz1(da1.n_rows, da1.n_cols);
+  DSigmoidBackprop(da1, this->cache.a[0], dz1);
+
+  // bpgrads.dW[0] = dz1 * bpcache.X.t() + reg * nn.W[0];
+  DeviceMatrix dW0(this->W[0].n_rows, this->W[0].n_cols);
+  this->W[0].to_gpu(dW0);
+  tiledGEMM(dz1, false, this->cache.X, true, dW0, 1, reg);
+  this->grads.dW[0] = dW0;
+
+  // bpgrads.db[0] = arma::sum(dz1, 1);
+  DeviceMatrix db0(this->b[0].n_rows, this->b[1].n_cols);
+  DSum(dz1, db0, 1, 1);
+  assert(this->grads.db[0].n_rows == db0.n_rows && this->grads.db[0].n_cols == db0.n_cols);
+  this->grads.db[0] = db0;
+
 }
 
 void DataParallelNeuralNetwork::step()
@@ -409,6 +449,14 @@ void DataParallelNeuralNetwork::step()
    * HINT: See part of the CPU implementation void train above.
    * Example of CUDA kernel to use: DElemArith.
    */
+  
+  // Optimizer step
+  // for (int i = 0; i < nn.W.size(); ++i)
+  //   nn.W[i] -= hparams.learning_rate * bpgrads.dW[i];
+
+  // for (int i = 0; i < nn.b.size(); ++i)
+  //   nn.b[i] -= hparams.learning_rate * bpgrads.db[i];
+
 }
 
 void DataParallelNeuralNetwork::to_cpu(NeuralNetwork &nn)

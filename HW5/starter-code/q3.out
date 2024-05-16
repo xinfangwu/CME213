@@ -1,0 +1,27 @@
+Starting at Wed May 15 18:00:49 PDT 2024
+
+nvc++ -isystem ./googletest-main/googletest/include -O2 -tp=px -gpu=cuda12.3,cc75,sm_75 -cuda --diag_suppress unrecognized_attribute  -I./armadillo-12.8.2/include -I./cuda_helper -I/home/cme213/software/nvidia-hpc-sdk/2024_24.1/Linux_x86_64/24.1/comm_libs/12.3/hpcx/hpcx-2.17.1/ompi/include -c neural_network.cpp
+mpic++ main_q2.o gpu_func.o neural_network.o gtest_main.a -o main_q2 -gpu=cuda12.3,cc75,sm_75 -cuda -lblas -lcublas -L/home/cme213/software/nvidia-hpc-sdk/2024_24.1/Linux_x86_64/24.1/math_libs/12.3/targets/x86_64-linux/lib
+mpic++ main_q3.o gpu_func.o neural_network.o gtest_main.a -o main_q3 -gpu=cuda12.3,cc75,sm_75 -cuda -lblas -lcublas -L/home/cme213/software/nvidia-hpc-sdk/2024_24.1/Linux_x86_64/24.1/math_libs/12.3/targets/x86_64-linux/lib
+mpic++ main_q4.o gpu_func.o neural_network.o gtest_main.a -o main_q4 -gpu=cuda12.3,cc75,sm_75 -cuda -lblas -lcublas -L/home/cme213/software/nvidia-hpc-sdk/2024_24.1/Linux_x86_64/24.1/math_libs/12.3/targets/x86_64-linux/lib
+mpic++ main_q5.o gpu_func.o neural_network.o gtest_main.a -o main_q5 -gpu=cuda12.3,cc75,sm_75 -cuda -lblas -lcublas -L/home/cme213/software/nvidia-hpc-sdk/2024_24.1/Linux_x86_64/24.1/math_libs/12.3/targets/x86_64-linux/lib
+
+Output from main_q3
+----------------
+Running main() from ./googletest-main/googletest/src/gtest_main.cc
+[==========] Running 4 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 4 tests from gtestLoss
+[ RUN      ] gtestLoss.deviceWarmup
+[       OK ] gtestLoss.deviceWarmup (2141 ms)
+[ RUN      ] gtestLoss.small
+[       OK ] gtestLoss.small (80 ms)
+[ RUN      ] gtestLoss.medium
+[       OK ] gtestLoss.medium (1 ms)
+[ RUN      ] gtestLoss.large
+[       OK ] gtestLoss.large (73 ms)
+[----------] 4 tests from gtestLoss (2297 ms total)
+
+[----------] Global test environment tear-down
+[==========] 4 tests from 1 test suite ran. (2297 ms total)
+[  PASSED  ] 4 tests.

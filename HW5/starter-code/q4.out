@@ -1,0 +1,28 @@
+Starting at Thu May 16 00:05:50 PDT 2024
+
+nvc++ -isystem ./googletest-main/googletest/include -O2 -tp=px -gpu=cuda12.3,cc75,sm_75 -cuda --diag_suppress unrecognized_attribute  -I./armadillo-12.8.2/include -I./cuda_helper -I/home/cme213/software/nvidia-hpc-sdk/2024_24.1/Linux_x86_64/24.1/comm_libs/12.3/hpcx/hpcx-2.17.1/ompi/include -c main_q2.cpp
+mpic++ main_q2.o gpu_func.o neural_network.o gtest_main.a -o main_q2 -gpu=cuda12.3,cc75,sm_75 -cuda -lblas -lcublas -L/home/cme213/software/nvidia-hpc-sdk/2024_24.1/Linux_x86_64/24.1/math_libs/12.3/targets/x86_64-linux/lib
+nvc++ -isystem ./googletest-main/googletest/include -O2 -tp=px -gpu=cuda12.3,cc75,sm_75 -cuda --diag_suppress unrecognized_attribute  -I./armadillo-12.8.2/include -I./cuda_helper -I/home/cme213/software/nvidia-hpc-sdk/2024_24.1/Linux_x86_64/24.1/comm_libs/12.3/hpcx/hpcx-2.17.1/ompi/include -c main_q3.cpp
+mpic++ main_q3.o gpu_func.o neural_network.o gtest_main.a -o main_q3 -gpu=cuda12.3,cc75,sm_75 -cuda -lblas -lcublas -L/home/cme213/software/nvidia-hpc-sdk/2024_24.1/Linux_x86_64/24.1/math_libs/12.3/targets/x86_64-linux/lib
+nvc++ -isystem ./googletest-main/googletest/include -O2 -tp=px -gpu=cuda12.3,cc75,sm_75 -cuda --diag_suppress unrecognized_attribute  -I./armadillo-12.8.2/include -I./cuda_helper -I/home/cme213/software/nvidia-hpc-sdk/2024_24.1/Linux_x86_64/24.1/comm_libs/12.3/hpcx/hpcx-2.17.1/ompi/include -c main_q5.cpp
+mpic++ main_q5.o gpu_func.o neural_network.o gtest_main.a -o main_q5 -gpu=cuda12.3,cc75,sm_75 -cuda -lblas -lcublas -L/home/cme213/software/nvidia-hpc-sdk/2024_24.1/Linux_x86_64/24.1/math_libs/12.3/targets/x86_64-linux/lib
+
+Output from main_q4
+----------------
+Running main() from ./googletest-main/googletest/src/gtest_main.cc
+[==========] Running 4 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 4 tests from gtestBackward
+[ RUN      ] gtestBackward.deviceWarmup
+[       OK ] gtestBackward.deviceWarmup (2141 ms)
+[ RUN      ] gtestBackward.small
+[       OK ] gtestBackward.small (73 ms)
+[ RUN      ] gtestBackward.medium
+[       OK ] gtestBackward.medium (1 ms)
+[ RUN      ] gtestBackward.large
+[       OK ] gtestBackward.large (73 ms)
+[----------] 4 tests from gtestBackward (2291 ms total)
+
+[----------] Global test environment tear-down
+[==========] 4 tests from 1 test suite ran. (2291 ms total)
+[  PASSED  ] 4 tests.
