@@ -350,6 +350,41 @@ nn_real DataParallelNeuralNetwork::loss(const DeviceMatrix &y, nn_real weight)
    * the CPU implementation. Examples of CUDA kernels in "gpu_func.cu" to use:
    * DCELoss, to_cpu, DSquare, DSum.
    */
+
+  // data loss
+  // nn_real ce_sum = -arma::accu(arma::log(yc.elem(arma::find(y == 1))));
+  // nn_real data_loss = ce_sum / N;
+  DeviceMatrix lossMatrix(1, 1);
+  DCELoss(cache.yc, y, lossMatrix);
+  arma::Mat<nn_real> cpu_ce_loss(1, 1);
+  lossMatrix.to_cpu(cpu_ce_loss);
+  nn_real data_loss = weight * cpu_ce_loss(0, 0);
+  
+
+  // reg loss
+  // nn_real reg_loss = 0.5 * reg * norms(nn);
+  nn_real reg_loss = 0;
+  for(size_t i =0; i<this->H.size(); i++){
+    DeviceMatrix W_square(this->W[i].n_rows, this->W[i].n_cols);
+    DSquare(this->W[i], W_square);
+
+    DeviceMatrix regSumRow(this->W[i].n_rows, 1);
+    DSum(W_square, regSumRow, 1, 1);
+    DeviceMatrix regSum(1, 1);
+    DSum(regSumRow, regSum, 1, 0);
+
+    arma::Mat<nn_real> layer_reg(1, 1);
+    regSum.to_cpu(layer_reg);
+    reg_loss += layer_reg(0, 0);
+  }
+  
+  
+  reg_loss = 0.5 * this->reg * reg_loss;
+  
+  // nn_real loss = data_loss + reg_loss;
+  nn_real loss = data_loss + reg_loss;
+
+  return loss;
 }
 
 void DataParallelNeuralNetwork::backward(const DeviceMatrix &y,
