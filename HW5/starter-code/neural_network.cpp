@@ -366,7 +366,7 @@ nn_real DataParallelNeuralNetwork::loss(const DeviceMatrix &y, nn_real weight)
   // reg loss
   // nn_real reg_loss = 0.5 * reg * norms(nn);
   nn_real reg_loss = 0;
-  for(size_t i =0; i<this->H.size(); i++){
+  for(size_t i =0; i<this->W.size(); i++){
     DeviceMatrix W_square(this->W[i].n_rows, this->W[i].n_cols);
     DSquare(this->W[i], W_square);
 
@@ -453,10 +453,13 @@ void DataParallelNeuralNetwork::step()
   // Optimizer step
   // for (int i = 0; i < nn.W.size(); ++i)
   //   nn.W[i] -= hparams.learning_rate * bpgrads.dW[i];
-
   // for (int i = 0; i < nn.b.size(); ++i)
   //   nn.b[i] -= hparams.learning_rate * bpgrads.db[i];
-
+  assert(this->W.size() == this->b.size());
+  for (int i = 0; i < this->W.size(); ++i) {
+    DElemArith(this->W[i], this->grads.dW[i], 1, -1 * this->lr);
+    DElemArith(this->b[i], this->grads.db[i], 1, -1 * this->lr);
+  }
 }
 
 void DataParallelNeuralNetwork::to_cpu(NeuralNetwork &nn)

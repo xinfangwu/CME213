@@ -1,0 +1,23 @@
+Starting at Thu May 16 00:31:38 PDT 2024
+
+make: Nothing to be done for 'default'.
+
+Output from main_q5
+----------------
+Running main() from ./googletest-main/googletest/src/gtest_main.cc
+[==========] Running 4 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 4 tests from gtestStep
+[ RUN      ] gtestStep.deviceWarmup
+[       OK ] gtestStep.deviceWarmup (2142 ms)
+[ RUN      ] gtestStep.small
+[       OK ] gtestStep.small (74 ms)
+[ RUN      ] gtestStep.medium
+[       OK ] gtestStep.medium (1 ms)
+[ RUN      ] gtestStep.large
+[       OK ] gtestStep.large (73 ms)
+[----------] 4 tests from gtestStep (2292 ms total)
+
+[----------] Global test environment tear-down
+[==========] 4 tests from 1 test suite ran. (2292 ms total)
+[  PASSED  ] 4 tests.
