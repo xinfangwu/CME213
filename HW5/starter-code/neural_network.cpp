@@ -205,8 +205,12 @@ GPUGrads::GPUGrads(const NeuralNetwork &nn)
    * allocated with gpu_mem_pool will be used to set up dW and db. Calculate the
    * total number of elements that we need to allocate memory for.
    */
-  gpu_mem_pool =
-      std::make_shared<DeviceAllocator>(total_size * sizeof(nn_real));
+  for (size_t i = 0; i < nn.num_layers - 1; i++) {
+    total_size += nn.H[i] * nn.H[i + 1]; 
+    total_size += nn.H[i + 1];           
+  }
+
+  gpu_mem_pool = std::make_shared<DeviceAllocator>(total_size * sizeof(nn_real));
   nn_real *gpu_mem_pool_start = gpu_mem_pool.get()->memptr();
 
   size_t offset = 0;
@@ -224,6 +228,16 @@ GPUGrads::GPUGrads(const NeuralNetwork &nn)
    * The template pseudo-code looks like:
    * dW[...] = DeviceMatrix(gpu_mem_pool_start + ..., n_rows, n_cols);
    */
+
+  for (size_t i = 0; i < nn.num_layers; ++i) {
+
+    dW[i] = DeviceMatrix(gpu_mem_pool_start + offset, nn.H[i], nn.H[i + 1]);
+    offset += nn.H[i] * nn.H[i + 1];
+
+    
+    db[i] = DeviceMatrix(gpu_mem_pool_start + offset, nn.H[i + 1], 1);
+    offset += nn.H[i + 1];
+  }
 }
 
 DataParallelNeuralNetwork::DataParallelNeuralNetwork(NeuralNetwork &nn,
@@ -239,6 +253,39 @@ DataParallelNeuralNetwork::DataParallelNeuralNetwork(NeuralNetwork &nn,
    * will need to correctly initialize at least: cache.a, cache.z, W[], b[], and
    * reg.
    */
+
+  // Initialize regularization parameter and learning rate
+  this->reg = reg;
+  this->lr = lr;
+  this->num_procs = num_procs;
+
+  int numLayer = nn.num_layers;
+  assert(numLayer == nn.W.size());
+  assert(numLayer == nn.b.size());
+
+  W.resize(numLayer);
+  b.resize(numLayer);
+  // Initialize weights and biases from the given neural network model
+  for(size_t i=0; i<numLayer; i++){
+    // weights
+    DeviceMatrix cpuW(nn.W[i]);
+    W[i] = DeviceMatrix(nn.W[i].n_rows, nn.W[i].n_cols);
+    W[i] = cpuW;
+
+    // biases
+    DeviceMatrix cpub(nn.b[i]);
+    b[i] = DeviceMatrix(nn.b[i].n_rows, nn.b[i].n_cols);
+    b[i] = cpub;
+  }
+
+  // Initialize cache 
+  cache.a.resize(numLayer); 
+  cache.z.resize(numLayer);
+
+  // Initializw grad
+  grads = GPUGrads(nn);
+  grads.dW.resize(numLayer);
+  grads.db.resize(numLayer);
 }
 
 void DataParallelNeuralNetwork::forward(const DeviceMatrix &X)
@@ -250,6 +297,49 @@ void DataParallelNeuralNetwork::forward(const DeviceMatrix &X)
    * any new CUDA kernel.
    * Examples of kernels to use: DRepeatColVec, tiledGEMM, DSigmoid, DSoftmax.
    */
+
+
+  // assert(X.n_rows == nn.W[0].n_cols);
+  // cache.X = X;
+  // int N = X.n_cols;
+  assert(X.n_rows == this->W[0].n_cols);
+  cache.X = X;
+
+  // Layer 1
+  // arma::Mat<nn_real> z1 = nn.W[0] * X + arma::repmat(nn.b[0], 1, N); 
+  // cache.z[0] = z1;
+  assert(this->b[0].n_cols == 1);
+  DeviceMatrix z1(this->W[0].n_rows, X.n_cols);
+  DRepeatColVec(this->b[0], z1, X.n_cols);
+  tiledGEMM(this->W[0], false, X, false, z1, 1, 1);
+  cache.z[0] = z1;
+
+  // arma::Mat<nn_real> a1;
+  // sigmoid(z1, a1);
+  // cache.a[0] = a1;
+  DeviceMatrix a1(z1.n_rows, z1.n_cols);
+  assert(a1.n_cols == z1.n_cols && a1.n_rows == z1.n_rows);
+  DSigmoid(z1, a1);
+  cache.a[0] = a1;
+
+  // assert(a1.n_rows == nn.W[1].n_cols);
+  // arma::Mat<nn_real> z2 = nn.W[1] * a1 + arma::repmat(nn.b[1], 1, N);
+  // cache.z[1] = z2;
+  assert(cache.a[0].n_rows == this->W[1].n_cols);
+  assert(this->b[1].n_cols == 1);
+  DeviceMatrix z2(this->W[1].n_rows, a1.n_cols);
+  DRepeatColVec(this->b[1], z2, a1.n_cols);
+  tiledGEMM(this->W[1], false, a1, false, z2, 1, 1);
+  cache.z[1] = z2;
+
+  // arma::Mat<nn_real> a2;
+  // softmax(z2, a2);
+  // cache.a[1] = cache.yc = a2;
+  DeviceMatrix a2(z2.n_rows, z2.n_cols);
+  DSoftmax(z2, a2, 0);
+  cache.a[1] = a2;
+  cache.yc = a2;
+
 }
 
 nn_real DataParallelNeuralNetwork::loss(const DeviceMatrix &y, nn_real weight)
@@ -262,6 +352,41 @@ nn_real DataParallelNeuralNetwork::loss(const DeviceMatrix &y, nn_real weight)
    * the CPU implementation. Examples of CUDA kernels in "gpu_func.cu" to use:
    * DCELoss, to_cpu, DSquare, DSum.
    */
+
+  // data loss
+  // nn_real ce_sum = -arma::accu(arma::log(yc.elem(arma::find(y == 1))));
+  // nn_real data_loss = ce_sum / N;
+  DeviceMatrix lossMatrix(1, 1);
+  DCELoss(cache.yc, y, lossMatrix);
+  arma::Mat<nn_real> cpu_ce_loss(1, 1);
+  lossMatrix.to_cpu(cpu_ce_loss);
+  nn_real data_loss = weight * cpu_ce_loss(0, 0);
+  
+
+  // reg loss
+  // nn_real reg_loss = 0.5 * reg * norms(nn);
+  nn_real reg_loss = 0;
+  for(size_t i =0; i<this->W.size(); i++){
+    DeviceMatrix W_square(this->W[i].n_rows, this->W[i].n_cols);
+    DSquare(this->W[i], W_square);
+
+    DeviceMatrix regSumRow(this->W[i].n_rows, 1);
+    DSum(W_square, regSumRow, 1, 1);
+    DeviceMatrix regSum(1, 1);
+    DSum(regSumRow, regSum, 1, 0);
+
+    arma::Mat<nn_real> layer_reg(1, 1);
+    regSum.to_cpu(layer_reg);
+    reg_loss += layer_reg(0, 0);
+  }
+  
+  
+  reg_loss = 0.5 * this->reg * reg_loss;
+  
+  // nn_real loss = data_loss + reg_loss;
+  nn_real loss = data_loss + reg_loss;
+
+  return loss;
 }
 
 void DataParallelNeuralNetwork::backward(const DeviceMatrix &y,
@@ -277,6 +402,44 @@ void DataParallelNeuralNetwork::backward(const DeviceMatrix &y,
    * Examples of CUDA kernels to use: DElemArith, to_gpu, tiledGEMM, DSum,
    * DSigmoidBackprop.
    */
+
+  // arma::Mat<nn_real> diff = (1.0 / N) * (bpcache.yc - y);
+  DeviceMatrix diff(this->cache.yc.n_rows, this->cache.yc.n_cols);
+  assert(this->cache.yc.n_rows == diff.n_rows && this->cache.yc.n_cols == diff.n_cols);
+  this->cache.yc.to_gpu(diff);
+  DElemArith(diff, y, grad_weight, -1);
+
+  // bpgrads.dW[1] = diff * bpcache.a[0].t() + reg * nn.W[1];
+  DeviceMatrix dW1(this->W[1].n_rows, this->W[1].n_cols);
+  this->W[1].to_gpu(dW1);
+  tiledGEMM(diff, false, this->cache.a[0], true, dW1, 1, reg);
+  this->grads.dW[1] = dW1;
+
+  // bpgrads.db[1] = arma::sum(diff, 1);
+  DeviceMatrix db1(this->b[1].n_rows, this->b[1].n_cols);
+  DSum(diff, db1, 1, 1);
+  this->grads.db[1] = db1;
+
+  // arma::Mat<nn_real> da1 = nn.W[1].t() * diff;
+  DeviceMatrix da1(cache.a[0].n_rows, cache.a[0].n_cols);
+  tiledGEMM(this->W[1], true, diff, false, da1, 1, 0);
+
+  // arma::Mat<nn_real> dz1 = da1 % bpcache.a[0] % (1 - bpcache.a[0]);
+  DeviceMatrix dz1(da1.n_rows, da1.n_cols);
+  DSigmoidBackprop(da1, this->cache.a[0], dz1);
+
+  // bpgrads.dW[0] = dz1 * bpcache.X.t() + reg * nn.W[0];
+  DeviceMatrix dW0(this->W[0].n_rows, this->W[0].n_cols);
+  this->W[0].to_gpu(dW0);
+  tiledGEMM(dz1, false, this->cache.X, true, dW0, 1, reg);
+  this->grads.dW[0] = dW0;
+
+  // bpgrads.db[0] = arma::sum(dz1, 1);
+  DeviceMatrix db0(this->b[0].n_rows, this->b[1].n_cols);
+  DSum(dz1, db0, 1, 1);
+  assert(this->grads.db[0].n_rows == db0.n_rows && this->grads.db[0].n_cols == db0.n_cols);
+  this->grads.db[0] = db0;
+
 }
 
 void DataParallelNeuralNetwork::step()
@@ -286,6 +449,17 @@ void DataParallelNeuralNetwork::step()
    * HINT: See part of the CPU implementation void train above.
    * Example of CUDA kernel to use: DElemArith.
    */
+  
+  // Optimizer step
+  // for (int i = 0; i < nn.W.size(); ++i)
+  //   nn.W[i] -= hparams.learning_rate * bpgrads.dW[i];
+  // for (int i = 0; i < nn.b.size(); ++i)
+  //   nn.b[i] -= hparams.learning_rate * bpgrads.db[i];
+  assert(this->W.size() == this->b.size());
+  for (int i = 0; i < this->W.size(); ++i) {
+    DElemArith(this->W[i], this->grads.dW[i], 1, -1 * this->lr);
+    DElemArith(this->b[i], this->grads.db[i], 1, -1 * this->lr);
+  }
 }
 
 void DataParallelNeuralNetwork::to_cpu(NeuralNetwork &nn)
@@ -294,4 +468,19 @@ void DataParallelNeuralNetwork::to_cpu(NeuralNetwork &nn)
    * TODO: Implement this function.
    * HINT: Use DeviceMatrix::to_cpu. You need to copy W[] and b[].
    */
+
+  nn.W.resize(W.size());
+  nn.b.resize(b.size());
+  // move weights from gpu to cpu 
+  for (size_t i = 0; i < nn.W.size(); i++) {
+    assert(W[i].n_cols == nn.W[i].n_cols && W[i].n_rows == nn.W[i].n_rows);
+    W[i].to_cpu(nn.W[i]); 
+  }
+
+  // move biases from gpu to cpu
+  for (size_t i = 0; i < nn.b.size(); i++) {
+    assert(b[i].n_cols == nn.b[i].n_cols && b[i].n_rows == nn.b[i].n_rows);
+    b[i].to_cpu(nn.b[i]); 
+  }
+
 }

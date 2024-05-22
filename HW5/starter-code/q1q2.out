@@ -1,0 +1,25 @@
+Starting at Wed May 15 17:07:27 PDT 2024
+
+mpic++ main_q3.o gpu_func.o neural_network.o gtest_main.a -o main_q3 -gpu=cuda12.3,cc75,sm_75 -cuda -lblas -lcublas -L/home/cme213/software/nvidia-hpc-sdk/2024_24.1/Linux_x86_64/24.1/math_libs/12.3/targets/x86_64-linux/lib
+mpic++ main_q4.o gpu_func.o neural_network.o gtest_main.a -o main_q4 -gpu=cuda12.3,cc75,sm_75 -cuda -lblas -lcublas -L/home/cme213/software/nvidia-hpc-sdk/2024_24.1/Linux_x86_64/24.1/math_libs/12.3/targets/x86_64-linux/lib
+mpic++ main_q5.o gpu_func.o neural_network.o gtest_main.a -o main_q5 -gpu=cuda12.3,cc75,sm_75 -cuda -lblas -lcublas -L/home/cme213/software/nvidia-hpc-sdk/2024_24.1/Linux_x86_64/24.1/math_libs/12.3/targets/x86_64-linux/lib
+
+Output from main_q2
+----------------
+Running main() from ./googletest-main/googletest/src/gtest_main.cc
+[==========] Running 4 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 4 tests from gtestForward
+[ RUN      ] gtestForward.deviceWarmup
+[       OK ] gtestForward.deviceWarmup (2132 ms)
+[ RUN      ] gtestForward.small
+[       OK ] gtestForward.small (74 ms)
+[ RUN      ] gtestForward.medium
+[       OK ] gtestForward.medium (1 ms)
+[ RUN      ] gtestForward.large
+[       OK ] gtestForward.large (75 ms)
+[----------] 4 tests from gtestForward (2283 ms total)
+
+[----------] Global test environment tear-down
+[==========] 4 tests from 1 test suite ran. (2283 ms total)
+[  PASSED  ] 4 tests.

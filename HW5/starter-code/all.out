@@ -1,0 +1,83 @@
+Starting at Thu May 16 00:30:55 PDT 2024
+
+make: Nothing to be done for 'default'.
+
+Output from main_q2
+----------------
+Running main() from ./googletest-main/googletest/src/gtest_main.cc
+[==========] Running 4 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 4 tests from gtestForward
+[ RUN      ] gtestForward.deviceWarmup
+[       OK ] gtestForward.deviceWarmup (2142 ms)
+[ RUN      ] gtestForward.small
+[       OK ] gtestForward.small (74 ms)
+[ RUN      ] gtestForward.medium
+[       OK ] gtestForward.medium (1 ms)
+[ RUN      ] gtestForward.large
+[       OK ] gtestForward.large (75 ms)
+[----------] 4 tests from gtestForward (2293 ms total)
+
+[----------] Global test environment tear-down
+[==========] 4 tests from 1 test suite ran. (2294 ms total)
+[  PASSED  ] 4 tests.
+
+Output from main_q3
+----------------
+Running main() from ./googletest-main/googletest/src/gtest_main.cc
+[==========] Running 4 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 4 tests from gtestLoss
+[ RUN      ] gtestLoss.deviceWarmup
+[       OK ] gtestLoss.deviceWarmup (2138 ms)
+[ RUN      ] gtestLoss.small
+[       OK ] gtestLoss.small (58 ms)
+[ RUN      ] gtestLoss.medium
+[       OK ] gtestLoss.medium (1 ms)
+[ RUN      ] gtestLoss.large
+[       OK ] gtestLoss.large (71 ms)
+[----------] 4 tests from gtestLoss (2270 ms total)
+
+[----------] Global test environment tear-down
+[==========] 4 tests from 1 test suite ran. (2270 ms total)
+[  PASSED  ] 4 tests.
+
+Output from main_q4
+----------------
+Running main() from ./googletest-main/googletest/src/gtest_main.cc
+[==========] Running 4 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 4 tests from gtestBackward
+[ RUN      ] gtestBackward.deviceWarmup
+[       OK ] gtestBackward.deviceWarmup (2147 ms)
+[ RUN      ] gtestBackward.small
+[       OK ] gtestBackward.small (62 ms)
+[ RUN      ] gtestBackward.medium
+[       OK ] gtestBackward.medium (1 ms)
+[ RUN      ] gtestBackward.large
+[       OK ] gtestBackward.large (73 ms)
+[----------] 4 tests from gtestBackward (2285 ms total)
+
+[----------] Global test environment tear-down
+[==========] 4 tests from 1 test suite ran. (2285 ms total)
+[  PASSED  ] 4 tests.
+
+Output from main_q5
+----------------
+Running main() from ./googletest-main/googletest/src/gtest_main.cc
+[==========] Running 4 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 4 tests from gtestStep
+[ RUN      ] gtestStep.deviceWarmup
+[       OK ] gtestStep.deviceWarmup (2143 ms)
+[ RUN      ] gtestStep.small
+[       OK ] gtestStep.small (59 ms)
+[ RUN      ] gtestStep.medium
+[       OK ] gtestStep.medium (1 ms)
+[ RUN      ] gtestStep.large
+[       OK ] gtestStep.large (74 ms)
+[----------] 4 tests from gtestStep (2278 ms total)
+
+[----------] Global test environment tear-down
+[==========] 4 tests from 1 test suite ran. (2278 ms total)
+[  PASSED  ] 4 tests.
