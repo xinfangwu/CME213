@@ -320,6 +320,13 @@ nn_real DataParallelNeuralNetwork::loss(const DeviceMatrix &y, nn_real weight) {
   /**
    * TODO: Return the sum of (data_loss + reg_loss) across all MPI processes.
    */
+
+  nn_real local_loss = data_loss + reg_loss / this->num_procs;
+  nn_real global_loss = 0;
+  MPI_Allreduce(&local_loss, &global_loss, 1, MPI_FP, MPI_SUM, MPI_COMM_WORLD);
+
+  return global_loss;
+
 }
 
 void DataParallelNeuralNetwork::backward(const DeviceMatrix &y,
@@ -348,6 +355,10 @@ void DataParallelNeuralNetwork::backward(const DeviceMatrix &y,
    * HINT: Use grads.gpu_mem_pool and grads.total_elements. The 'division' step
    * of computing the average has already been completed using grad_weight.
    */
+
+  nn_real *grad_data = grads.gpu_mem_pool->memptr();
+  MPI_Allreduce(&grad_data, &grad_data, grads.total_elements, MPI_FP, MPI_SUM, MPI_COMM_WORLD);
+
 }
 
 void DataParallelNeuralNetwork::step() {
@@ -370,6 +381,86 @@ void DataParallelNeuralNetwork::train(NeuralNetwork &nn, arma::Mat<nn_real> &X,
    * The last minibatch in an epoch may be smaller than previous minibatches in 
    * the epoch; you can use DeviceMatrix::set_n_cols() to deal with this case.
    */
+  int N = X.n_cols;
+  int iter = 0;
+  bool print_flag;
+
+  assert(X.n_cols == y.n_cols);
+
+  int num_batches = get_num_batches(N, hparams.batch_size);
+  int rank, num_procs;
+  MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+  MPI_Comm_size(MPI_COMM_WORLD, &num_procs);
+
+  if (num_procs > 1) {
+    if (rank == 0) {
+      MPI_Bcast(X.memptr(), X.n_elem, MPI_FP, 0, MPI_COMM_WORLD);
+      MPI_Bcast(y.memptr(), y.n_elem, MPI_FP, 0, MPI_COMM_WORLD);
+    } else {
+      X.set_size(X.n_rows, N);
+      y.set_size(y.n_rows, N);
+      MPI_Bcast(X.memptr(), X.n_elem, MPI_FP, 0, MPI_COMM_WORLD);
+      MPI_Bcast(y.memptr(), y.n_elem, MPI_FP, 0, MPI_COMM_WORLD);
+    }
+  }
+
+  for (int epoch = 0; epoch < hparams.num_epochs; epoch++) {
+    int batch_start = 0;
+    for (int batch = 0; batch < num_batches; batch++) {
+      int last_col = batch_start + get_batch_size(N, hparams.batch_size, batch);
+      assert(last_col <= X.n_cols);
+      assert(last_col <= y.n_cols);
+      assert(last_col > batch_start);
+      assert(batch < num_batches - 1 || last_col == X.n_cols);
+
+      arma::Mat<nn_real> X_batch = X.cols(batch_start, last_col - 1);
+      arma::Mat<nn_real> y_batch = y.cols(batch_start, last_col - 1);
+
+      DeviceMatrix X_batch_gpu(X_batch);
+      DeviceMatrix y_batch_gpu(y_batch);
+
+      // 前向传播
+      forward(X_batch_gpu);
+
+      // 反向传播
+      backward(y_batch_gpu, hparams.reg);
+
+      // 打印调试信息
+      print_flag = (hparams.debug == 1) && 
+                   ((iter % ((hparams.num_epochs * num_batches) / 4)) == 0);
+
+      // if (print_flag && rank == 0) {
+      //   DeviceMatrix yc_cpu;
+      //   cache.yc.to_cpu(yc_cpu);
+      //   printf("Parallel loss at iteration %d of epoch %d/%d = %25.20f\n", iter,
+      //          epoch, hparams.num_epochs,
+      //          loss(yc_cpu, y_batch_gpu, hparams.reg));
+      // }
+
+      // 使用 MPI_Allreduce 汇总梯度并平均
+      nn_real *grad_data = grads.gpu_mem_pool->memptr();
+      // int grad_size = grads.total_size;
+      // nn_real *temp_grad_data;
+      // cudaMalloc(&temp_grad_data, grad_size * sizeof(nn_real));
+      // cudaMemcpy(temp_grad_data, grad_data, grad_size * sizeof(nn_real), cudaMemcpyDeviceToDevice);
+      // MPI_Allreduce(MPI_IN_PLACE, temp_grad_data, grad_size, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
+      // cudaMemcpy(grad_data, temp_grad_data, grad_size * sizeof(nn_real), cudaMemcpyDeviceToDevice);
+      // cudaFree(temp_grad_data);
+      MPI_Allreduce(&grad_data, &grad_data, 1, MPI_FP, MPI_SUM, MPI_COMM_WORLD);
+
+      // 更新权重和偏置
+      for (int i = 0; i < W.size(); ++i) {
+        DElemArith(W[i], grads.dW[i], 1.0, -hparams.learning_rate);
+      }
+
+      for (int i = 0; i < b.size(); ++i) {
+        DElemArith(b[i], grads.db[i], 1.0, -hparams.learning_rate);
+      }
+
+      batch_start = last_col;
+      iter++;
+    }
+  }
 }
 
 void DataParallelNeuralNetwork::to_cpu(NeuralNetwork &nn) {
