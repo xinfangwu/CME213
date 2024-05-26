@@ -405,13 +405,11 @@ void DataParallelNeuralNetwork::train(NeuralNetwork &nn, arma::Mat<nn_real> &X,
       // batch 
       int batch_size = get_batch_size(N, hparams.batch_size, batch);
       int last_batch_col = std::min(batch_start + batch_size, N);
-      
-
       assert(last_batch_col <= X.n_cols);
       assert(last_batch_col <= y.n_cols);
       assert(last_batch_col > batch_start);
       assert(batch < num_batches - 1 || last_batch_col == X.n_cols);
-      // get the real batch size 
+      // update the batch size 
       batch_size = last_batch_col - batch_start;
 
 
@@ -420,8 +418,9 @@ void DataParallelNeuralNetwork::train(NeuralNetwork &nn, arma::Mat<nn_real> &X,
       int offset = get_offset(batch_size, num_procs, rank);
       int start = batch_start + offset;
       int end = std::min(start + mini_batch_size, last_batch_col);
+      assert(end <= last_batch_col);
       assert(end > start);
-      // get the real mini batch size 
+      // update the mini batch size 
       mini_batch_size = end - start;
 
       
@@ -443,7 +442,7 @@ void DataParallelNeuralNetwork::train(NeuralNetwork &nn, arma::Mat<nn_real> &X,
       cache.yc.set_n_cols(mini_batch_size);
 
       forward(X_mini_batch_gpu);
-      backward(y_mini_batch_gpu, 1.0 / batch_size);
+      backward(y_mini_batch_gpu, 1.0 / batch_size); // use 1.0 to make the weight become float 
 
           
       print_flag = (hparams.debug == 1) && 
