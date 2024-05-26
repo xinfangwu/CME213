@@ -321,7 +321,7 @@ nn_real DataParallelNeuralNetwork::loss(const DeviceMatrix &y, nn_real weight) {
    * TODO: Return the sum of (data_loss + reg_loss) across all MPI processes.
    */
 
-  nn_real local_loss = data_loss + reg_loss / this->num_procs;
+  nn_real local_loss = data_loss + reg_loss;
   nn_real global_loss = 0;
   MPI_Allreduce(&local_loss, &global_loss, 1, MPI_FP, MPI_SUM, MPI_COMM_WORLD);
 
@@ -357,8 +357,7 @@ void DataParallelNeuralNetwork::backward(const DeviceMatrix &y,
    */
 
   nn_real *grad_data = grads.gpu_mem_pool->memptr();
-  MPI_Allreduce(&grad_data, &grad_data, grads.total_elements, MPI_FP, MPI_SUM, MPI_COMM_WORLD);
-
+  MPI_Allreduce(MPI_IN_PLACE, grad_data, grads.total_elements, MPI_FP, MPI_SUM, MPI_COMM_WORLD);
 }
 
 void DataParallelNeuralNetwork::step() {
@@ -383,7 +382,7 @@ void DataParallelNeuralNetwork::train(NeuralNetwork &nn, arma::Mat<nn_real> &X,
    */
   int N = X.n_cols;
   int iter = 0;
-  bool print_flag;
+  bool print_flag = false;
 
   assert(X.n_cols == y.n_cols);
 
@@ -393,71 +392,67 @@ void DataParallelNeuralNetwork::train(NeuralNetwork &nn, arma::Mat<nn_real> &X,
   MPI_Comm_size(MPI_COMM_WORLD, &num_procs);
 
   if (num_procs > 1) {
-    if (rank == 0) {
+      // MPI_Bcast(&buffer,count,datatype,root,comm)
       MPI_Bcast(X.memptr(), X.n_elem, MPI_FP, 0, MPI_COMM_WORLD);
       MPI_Bcast(y.memptr(), y.n_elem, MPI_FP, 0, MPI_COMM_WORLD);
-    } else {
-      X.set_size(X.n_rows, N);
-      y.set_size(y.n_rows, N);
-      MPI_Bcast(X.memptr(), X.n_elem, MPI_FP, 0, MPI_COMM_WORLD);
-      MPI_Bcast(y.memptr(), y.n_elem, MPI_FP, 0, MPI_COMM_WORLD);
-    }
   }
 
   for (int epoch = 0; epoch < hparams.num_epochs; epoch++) {
     int batch_start = 0;
     for (int batch = 0; batch < num_batches; batch++) {
-      int last_col = batch_start + get_batch_size(N, hparams.batch_size, batch);
-      assert(last_col <= X.n_cols);
-      assert(last_col <= y.n_cols);
-      assert(last_col > batch_start);
-      assert(batch < num_batches - 1 || last_col == X.n_cols);
+      
+      
+      // batch 
+      int batch_size = get_batch_size(N, hparams.batch_size, batch);
+      int last_batch_col = batch_start + batch_size;
 
-      arma::Mat<nn_real> X_batch = X.cols(batch_start, last_col - 1);
-      arma::Mat<nn_real> y_batch = y.cols(batch_start, last_col - 1);
+      assert(last_batch_col <= X.n_cols);
+      assert(last_batch_col <= y.n_cols);
+      assert(last_batch_col > batch_start);
+      assert(batch < num_batches - 1 || last_batch_col == X.n_cols);
 
-      DeviceMatrix X_batch_gpu(X_batch);
-      DeviceMatrix y_batch_gpu(y_batch);
+      // mini batch in batch 
+      int mini_bacth_size = get_mini_batch_size(batch_size, num_procs, rank);
+      int offset = get_offset(batch_size, num_procs, rank);
+      int start = batch_start + offset;
+      int end = std::min(start + mini_bacth_size, last_batch_col);
+      assert(end <= last_batch_col);
+      // get the real mini batch size 
+      mini_bacth_size = end - start;
+      
+      // set up the mini batch 
+      arma::Mat<nn_real> X_mini_batch = X.cols(start, end - 1);
+      arma::Mat<nn_real> y_mini_batch = y.cols(start, end - 1);
 
-      // 前向传播
-      forward(X_batch_gpu);
+      DeviceMatrix X_mini_batch_gpu(X_mini_batch);
+      X_mini_batch_gpu.set_n_cols(mini_bacth_size);
+      DeviceMatrix y_mini_batch_gpu(y_mini_batch);
+      y_mini_batch_gpu.set_n_cols(mini_bacth_size);
 
-      // 反向传播
-      backward(y_batch_gpu, hparams.reg);
+      // set up the cache 
+      cache.a[0].set_n_cols(mini_bacth_size);
+      cache.a[1].set_n_cols(mini_bacth_size);
+      cache.z[0].set_n_cols(mini_bacth_size);
+      cache.z[1].set_n_cols(mini_bacth_size);
+      cache.X.set_n_cols(mini_bacth_size); 
+      cache.yc.set_n_cols(mini_bacth_size);
 
-      // 打印调试信息
+      forward(X_mini_batch_gpu);
+
+      backward(y_mini_batch_gpu, 1/batch_size);
+
       print_flag = (hparams.debug == 1) && 
                    ((iter % ((hparams.num_epochs * num_batches) / 4)) == 0);
 
-      // if (print_flag && rank == 0) {
-      //   DeviceMatrix yc_cpu;
-      //   cache.yc.to_cpu(yc_cpu);
-      //   printf("Parallel loss at iteration %d of epoch %d/%d = %25.20f\n", iter,
-      //          epoch, hparams.num_epochs,
-      //          loss(yc_cpu, y_batch_gpu, hparams.reg));
-      // }
-
-      // 使用 MPI_Allreduce 汇总梯度并平均
-      nn_real *grad_data = grads.gpu_mem_pool->memptr();
-      // int grad_size = grads.total_size;
-      // nn_real *temp_grad_data;
-      // cudaMalloc(&temp_grad_data, grad_size * sizeof(nn_real));
-      // cudaMemcpy(temp_grad_data, grad_data, grad_size * sizeof(nn_real), cudaMemcpyDeviceToDevice);
-      // MPI_Allreduce(MPI_IN_PLACE, temp_grad_data, grad_size, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
-      // cudaMemcpy(grad_data, temp_grad_data, grad_size * sizeof(nn_real), cudaMemcpyDeviceToDevice);
-      // cudaFree(temp_grad_data);
-      MPI_Allreduce(&grad_data, &grad_data, 1, MPI_FP, MPI_SUM, MPI_COMM_WORLD);
-
-      // 更新权重和偏置
-      for (int i = 0; i < W.size(); ++i) {
-        DElemArith(W[i], grads.dW[i], 1.0, -hparams.learning_rate);
+      if (print_flag && rank == 0) {
+        printf("Parallel loss at iteration %d of epoch %d/%d = %25.20f\n", iter,
+               epoch, hparams.num_epochs,
+               loss(y_mini_batch_gpu, 1/batch_size));
       }
+      
+      step();
 
-      for (int i = 0; i < b.size(); ++i) {
-        DElemArith(b[i], grads.db[i], 1.0, -hparams.learning_rate);
-      }
-
-      batch_start = last_col;
+      batch_start = last_batch_col;
       iter++;
     }
   }
