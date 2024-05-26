@@ -433,7 +433,7 @@ void DataParallelNeuralNetwork::train(NeuralNetwork &nn, arma::Mat<nn_real> &X,
       DeviceMatrix y_mini_batch_gpu(y_mini_batch);
       y_mini_batch_gpu.set_n_cols(mini_batch_size);
 
-      // // set up the cache 
+      // set up the cache 
       cache.a[0].set_n_cols(mini_batch_size);
       cache.a[1].set_n_cols(mini_batch_size);
       cache.z[0].set_n_cols(mini_batch_size);
