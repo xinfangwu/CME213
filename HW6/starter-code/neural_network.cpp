@@ -445,8 +445,8 @@ void DataParallelNeuralNetwork::train(NeuralNetwork &nn, arma::Mat<nn_real> &X,
       backward(y_mini_batch_gpu, 1.0 / batch_size); // use 1.0 to make the weight become float 
 
           
-      print_flag = (hparams.debug == 1) && 
-                   ((iter % ((hparams.num_epochs * num_batches) / 4)) == 0);
+      print_flag = (hparams.debug == 1) &&
+        ((iter % std::max(1, ((hparams.num_epochs * num_batches) / 4))) == 0);
 
       if (print_flag && rank == 0) {
         printf("Parallel loss at iteration %d of epoch %d/%d = %25.20f\n", iter,
