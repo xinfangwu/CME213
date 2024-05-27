@@ -388,8 +388,8 @@ void DataParallelNeuralNetwork::train(NeuralNetwork &nn, arma::Mat<nn_real> &X,
 
   int num_batches = get_num_batches(N, hparams.batch_size);
   int rank, num_procs;
-  MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-  MPI_Comm_size(MPI_COMM_WORLD, &num_procs);
+  MPI_SAFE_CALL(MPI_Comm_rank(MPI_COMM_WORLD, &rank));
+  MPI_SAFE_CALL(MPI_Comm_size(MPI_COMM_WORLD, &num_procs));
 
   if (num_procs > 1) {
       // MPI_Bcast(&buffer,count,datatype,root,comm)
