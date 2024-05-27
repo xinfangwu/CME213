@@ -1,4 +1,4 @@
-Starting at Sun May 26 03:12:18 PDT 2024
+Starting at Sun May 26 23:39:14 PDT 2024
 
 nvc++ -isystem ./googletest-main/googletest/include -O2 -tp=px -gpu=cuda12.3,cc75,sm_75 -cuda --diag_suppress unrecognized_attribute  -I./armadillo-12.8.2/include -I./cuda_helper -I/home/cme213/software/nvidia-hpc-sdk/2024_24.1/Linux_x86_64/24.1/comm_libs/12.3/hpcx/hpcx-2.17.1/ompi/include -c neural_network.cpp
 mpic++ main_q1.o gpu_func.o neural_network.o mnist.o gtest_main.a -o main_q1 -gpu=cuda12.3,cc75,sm_75 -cuda -lblas -lcublas -L/home/cme213/software/nvidia-hpc-sdk/2024_24.1/Linux_x86_64/24.1/math_libs/12.3/targets/x86_64-linux/lib
@@ -10,91 +10,34 @@ Output from main_q1
 [0;32m[----------] [mGlobal test environment set-up.
 [0;32m[----------] [m5 tests from gtestTrain
 [0;32m[ RUN      ] [mgtestTrain.small1
-Rank 0/1 started on node hpcc-gpu-5-3 [myGPU = 0, nGPUs = 4]
-Time for Sequential Training: 0.026297 seconds
-Time for Parallel Training: 0.00518208 seconds
-[0;32m[       OK ] [mgtestTrain.small1 (167 ms)
+Rank 0/1 started on node hpcc-gpu-5-4 [myGPU = 0, nGPUs = 1]
+Time for Sequential Training: 0.025213 seconds
+Time for Parallel Training: 0.00494575 seconds
+[0;32m[       OK ] [mgtestTrain.small1 (165 ms)
 [0;32m[ RUN      ] [mgtestTrain.small2
-Rank 0/1 started on node hpcc-gpu-5-3 [myGPU = 0, nGPUs = 4]
-Time for Sequential Training: 0.00899892 seconds
-Time for Parallel Training: 0.0103093 seconds
-[0;32m[       OK ] [mgtestTrain.small2 (33 ms)
+Rank 0/1 started on node hpcc-gpu-5-4 [myGPU = 0, nGPUs = 1]
+Time for Sequential Training: 0.0091461 seconds
+Time for Parallel Training: 0.0102907 seconds
+[0;32m[       OK ] [mgtestTrain.small2 (34 ms)
 [0;32m[ RUN      ] [mgtestTrain.small3
-Rank 0/1 started on node hpcc-gpu-5-3 [myGPU = 0, nGPUs = 4]
-Time for Sequential Training: 0.0712478 seconds
-Time for Parallel Training: 0.0803401 seconds
-[0;32m[       OK ] [mgtestTrain.small3 (165 ms)
+Rank 0/1 started on node hpcc-gpu-5-4 [myGPU = 0, nGPUs = 1]
+Time for Sequential Training: 0.0695606 seconds
+Time for Parallel Training: 0.0821221 seconds
+[0;32m[       OK ] [mgtestTrain.small3 (166 ms)
 [0;32m[ RUN      ] [mgtestTrain.medium
-Rank 0/1 started on node hpcc-gpu-5-3 [myGPU = 0, nGPUs = 4]
-Time for Sequential Training: 0.0508559 seconds
-Time for Parallel Training: 0.0328815 seconds
-[0;32m[       OK ] [mgtestTrain.medium (125 ms)
+Rank 0/1 started on node hpcc-gpu-5-4 [myGPU = 0, nGPUs = 1]
+Time for Sequential Training: 0.0508303 seconds
+Time for Parallel Training: 0.032963 seconds
+[0;32m[       OK ] [mgtestTrain.medium (126 ms)
 [0;32m[ RUN      ] [mgtestTrain.large
-Rank 0/1 started on node hpcc-gpu-5-3 [myGPU = 0, nGPUs = 4]
-Time for Sequential Training: 0.336951 seconds
-Time for Parallel Training: 0.100907 seconds
-[0;32m[       OK ] [mgtestTrain.large (668 ms)
-[0;32m[----------] [m5 tests from gtestTrain (1160 ms total)
+Rank 0/1 started on node hpcc-gpu-5-4 [myGPU = 0, nGPUs = 1]
+Time for Sequential Training: 0.333848 seconds
+Time for Parallel Training: 0.097879 seconds
+[0;32m[       OK ] [mgtestTrain.large (661 ms)
+[0;32m[----------] [m5 tests from gtestTrain (1154 ms total)
 
 [0;32m[----------] [mGlobal test environment tear-down
-[0;32m[==========] [m5 tests from 1 test suite ran. (1160 ms total)
-[0;32m[  PASSED  ] [m5 tests.
-----------------
-[0;32m[==========] [mRunning 5 tests from 1 test suite.
-[0;32m[----------] [mGlobal test environment set-up.
-[0;32m[==========] [mRunning 5 tests from 1 test suite.
-[0;32m[----------] [mGlobal test environment set-up.
-[0;32m[----------] [m5 tests from gtestTrain
-[0;32m[ RUN      ] [mgtestTrain.small1
-[0;32m[----------] [m5 tests from gtestTrain
-[0;32m[ RUN      ] [mgtestTrain.small1
-Rank 0/2 started on node hpcc-gpu-5-3 [myGPU = 0, nGPUs = 4]
-Rank 1/2 started on node hpcc-gpu-5-3 [myGPU = 1, nGPUs = 4]
-Time for Sequential Training: 0.00164586 seconds
-Time for Parallel Training: 0.0067422 seconds
-[0;32m[       OK ] [mgtestTrain.small1 (124 ms)
-[0;32m[ RUN      ] [mgtestTrain.small2
-Rank 1/2 started on node hpcc-gpu-5-3 [myGPU = 1, nGPUs = 4]
-[0;32m[       OK ] [mgtestTrain.small1 (124 ms)
-[0;32m[ RUN      ] [mgtestTrain.small2
-Rank 0/2 started on node hpcc-gpu-5-3 [myGPU = 0, nGPUs = 4]
-Time for Sequential Training: 0.00903617 seconds
-Time for Parallel Training: 0.0126273 seconds
-[0;32m[       OK ] [mgtestTrain.small2 (36 ms)
-[0;32m[ RUN      ] [mgtestTrain.small3
-Rank 1/2 started on node hpcc-gpu-5-3 [myGPU = 1, nGPUs = 4]
-[0;32m[       OK ] [mgtestTrain.small2 (36 ms)
-[0;32m[ RUN      ] [mgtestTrain.small3
-Rank 0/2 started on node hpcc-gpu-5-3 [myGPU = 0, nGPUs = 4]
-Time for Sequential Training: 0.0697092 seconds
-Time for Parallel Training: 0.0890183 seconds
-[0;32m[       OK ] [mgtestTrain.small3 (172 ms)
-[0;32m[ RUN      ] [mgtestTrain.medium
-Rank 1/2 started on node hpcc-gpu-5-3 [myGPU = 1, nGPUs = 4]
-[0;32m[       OK ] [mgtestTrain.small3 (173 ms)
-[0;32m[ RUN      ] [mgtestTrain.medium
-Rank 0/2 started on node hpcc-gpu-5-3 [myGPU = 0, nGPUs = 4]
-Time for Sequential Training: 0.0512104 seconds
-Time for Parallel Training: 0.0452488 seconds
-[0;32m[       OK ] [mgtestTrain.medium (139 ms)
-[0;32m[ RUN      ] [mgtestTrain.large
-Rank 1/2 started on node hpcc-gpu-5-3 [myGPU = 1, nGPUs = 4]
-[0;32m[       OK ] [mgtestTrain.medium (140 ms)
-[0;32m[ RUN      ] [mgtestTrain.large
-Rank 0/2 started on node hpcc-gpu-5-3 [myGPU = 0, nGPUs = 4]
-Time for Sequential Training: 0.33917 seconds
-Time for Parallel Training: 0.176106 seconds
-[0;32m[       OK ] [mgtestTrain.large (741 ms)
-[0;32m[----------] [m5 tests from gtestTrain (1215 ms total)
-
-[0;32m[----------] [mGlobal test environment tear-down
-[0;32m[==========] [m5 tests from 1 test suite ran. (1215 ms total)
-[0;32m[  PASSED  ] [m5 tests.
-[0;32m[       OK ] [mgtestTrain.large (746 ms)
-[0;32m[----------] [m5 tests from gtestTrain (1221 ms total)
-
-[0;32m[----------] [mGlobal test environment tear-down
-[0;32m[==========] [m5 tests from 1 test suite ran. (1221 ms total)
+[0;32m[==========] [m5 tests from 1 test suite ran. (1154 ms total)
 [0;32m[  PASSED  ] [m5 tests.
 ----------------
 [0;32m[==========] [mRunning 5 tests from 1 test suite.
@@ -105,76 +48,53 @@ Time for Parallel Training: 0.176106 seconds
 [0;32m[----------] [mGlobal test environment set-up.
 [0;32m[----------] [m5 tests from gtestTrain
 [0;32m[ RUN      ] [mgtestTrain.small1
-[0;32m[==========] [mRunning 5 tests from 1 test suite.
-[0;32m[----------] [mGlobal test environment set-up.
-[0;32m[----------] [m5 tests from gtestTrain
-[0;32m[ RUN      ] [mgtestTrain.small1
-Rank 0/3 started on node hpcc-gpu-5-3 [myGPU = 0, nGPUs = 4]
-Rank 1/3 started on node hpcc-gpu-5-3 [myGPU = 1, nGPUs = 4]
-Rank 2/3 started on node hpcc-gpu-5-3 [myGPU = 2, nGPUs = 4]
-Time for Sequential Training: 0.00191108 seconds
-Time for Parallel Training: 0.00623194 seconds
-[0;32m[       OK ] [mgtestTrain.small1 (175 ms)
+Rank 0/2 started on node hpcc-gpu-5-4 [myGPU = 0, nGPUs = 1]
+Rank 1/2 started on node hpcc-gpu-5-4 [myGPU = 0, nGPUs = 1]
+Time for Sequential Training: 0.00147854 seconds
+Time for Parallel Training: 0.00739308 seconds
+[0;32m[       OK ] [mgtestTrain.small1 (111 ms)
 [0;32m[ RUN      ] [mgtestTrain.small2
-Rank 1/3 started on node hpcc-gpu-5-3 [myGPU = 1, nGPUs = 4]
-[0;32m[       OK ] [mgtestTrain.small1 (175 ms)
+Rank 1/2 started on node hpcc-gpu-5-4 [myGPU = 0, nGPUs = 1]
+[0;32m[       OK ] [mgtestTrain.small1 (112 ms)
 [0;32m[ RUN      ] [mgtestTrain.small2
-Rank 2/3 started on node hpcc-gpu-5-3 [myGPU = 2, nGPUs = 4]
-[0;32m[       OK ] [mgtestTrain.small1 (175 ms)
-[0;32m[ RUN      ] [mgtestTrain.small2
-Rank 0/3 started on node hpcc-gpu-5-3 [myGPU = 0, nGPUs = 4]
-Time for Sequential Training: 0.00911315 seconds
-Time for Parallel Training: 0.012974 seconds
-[0;32m[       OK ] [mgtestTrain.small2 (37 ms)
+Rank 0/2 started on node hpcc-gpu-5-4 [myGPU = 0, nGPUs = 1]
+Time for Sequential Training: 0.00901166 seconds
+Time for Parallel Training: 0.0337234 seconds
+[0;32m[       OK ] [mgtestTrain.small2 (57 ms)
 [0;32m[ RUN      ] [mgtestTrain.small3
-Rank 1/3 started on node hpcc-gpu-5-3 [myGPU = 1, nGPUs = 4]
-[0;32m[       OK ] [mgtestTrain.small2 (37 ms)
+Rank 1/2 started on node hpcc-gpu-5-4 [myGPU = 0, nGPUs = 1]
+[0;32m[       OK ] [mgtestTrain.small2 (57 ms)
 [0;32m[ RUN      ] [mgtestTrain.small3
-Rank 2/3 started on node hpcc-gpu-5-3 [myGPU = 2, nGPUs = 4]
-[0;32m[       OK ] [mgtestTrain.small2 (37 ms)
-[0;32m[ RUN      ] [mgtestTrain.small3
-Rank 0/3 started on node hpcc-gpu-5-3 [myGPU = 0, nGPUs = 4]
-Time for Sequential Training: 0.0699422 seconds
-Time for Parallel Training: 0.0900924 seconds
-[0;32m[       OK ] [mgtestTrain.small3 (174 ms)
+Rank 0/2 started on node hpcc-gpu-5-4 [myGPU = 0, nGPUs = 1]
+Time for Sequential Training: 0.0698655 seconds
+Time for Parallel Training: 0.227425 seconds
+[0;32m[       OK ] [mgtestTrain.small3 (311 ms)
 [0;32m[ RUN      ] [mgtestTrain.medium
-Rank 1/3 started on node hpcc-gpu-5-3 [myGPU = 1, nGPUs = 4]
-[0;32m[       OK ] [mgtestTrain.small3 (174 ms)
+Rank 1/2 started on node hpcc-gpu-5-4 [myGPU = 0, nGPUs = 1]
+[0;32m[       OK ] [mgtestTrain.small3 (311 ms)
 [0;32m[ RUN      ] [mgtestTrain.medium
-Rank 2/3 started on node hpcc-gpu-5-3 [myGPU = 2, nGPUs = 4]
-[0;32m[       OK ] [mgtestTrain.small3 (174 ms)
-[0;32m[ RUN      ] [mgtestTrain.medium
-Rank 0/3 started on node hpcc-gpu-5-3 [myGPU = 0, nGPUs = 4]
-Time for Sequential Training: 0.05141 seconds
-Time for Parallel Training: 0.0629596 seconds
-[0;32m[       OK ] [mgtestTrain.medium (158 ms)
+Rank 0/2 started on node hpcc-gpu-5-4 [myGPU = 0, nGPUs = 1]
+Time for Sequential Training: 0.0511055 seconds
+Time for Parallel Training: 0.0685716 seconds
+[0;32m[       OK ] [mgtestTrain.medium (163 ms)
 [0;32m[ RUN      ] [mgtestTrain.large
-Rank 2/3 started on node hpcc-gpu-5-3 [myGPU = 2, nGPUs = 4]
-[0;32m[       OK ] [mgtestTrain.medium (158 ms)
+Rank 1/2 started on node hpcc-gpu-5-4 [myGPU = 0, nGPUs = 1]
+[0;32m[       OK ] [mgtestTrain.medium (164 ms)
 [0;32m[ RUN      ] [mgtestTrain.large
-Rank 1/3 started on node hpcc-gpu-5-3 [myGPU = 1, nGPUs = 4]
-[0;32m[       OK ] [mgtestTrain.medium (159 ms)
-[0;32m[ RUN      ] [mgtestTrain.large
-Rank 0/3 started on node hpcc-gpu-5-3 [myGPU = 0, nGPUs = 4]
-Time for Sequential Training: 0.339572 seconds
-Time for Parallel Training: 0.213978 seconds
-[0;32m[       OK ] [mgtestTrain.large (781 ms)
-[0;32m[----------] [m5 tests from gtestTrain (1327 ms total)
+Rank 0/2 started on node hpcc-gpu-5-4 [myGPU = 0, nGPUs = 1]
+Time for Sequential Training: 0.336996 seconds
+Time for Parallel Training: 0.192916 seconds
+[0;32m[       OK ] [mgtestTrain.large (756 ms)
+[0;32m[----------] [m5 tests from gtestTrain (1401 ms total)
 
 [0;32m[----------] [mGlobal test environment tear-down
-[0;32m[==========] [m5 tests from 1 test suite ran. (1327 ms total)
+[0;32m[==========] [m5 tests from 1 test suite ran. (1401 ms total)
 [0;32m[  PASSED  ] [m5 tests.
-[0;32m[       OK ] [mgtestTrain.large (781 ms)
-[0;32m[----------] [m5 tests from gtestTrain (1327 ms total)
+[0;32m[       OK ] [mgtestTrain.large (760 ms)
+[0;32m[----------] [m5 tests from gtestTrain (1407 ms total)
 
 [0;32m[----------] [mGlobal test environment tear-down
-[0;32m[==========] [m5 tests from 1 test suite ran. (1327 ms total)
-[0;32m[  PASSED  ] [m5 tests.
-[0;32m[       OK ] [mgtestTrain.large (786 ms)
-[0;32m[----------] [m5 tests from gtestTrain (1332 ms total)
-
-[0;32m[----------] [mGlobal test environment tear-down
-[0;32m[==========] [m5 tests from 1 test suite ran. (1332 ms total)
+[0;32m[==========] [m5 tests from 1 test suite ran. (1407 ms total)
 [0;32m[  PASSED  ] [m5 tests.
 ----------------
 [0;32m[==========] [mRunning 5 tests from 1 test suite.
@@ -189,94 +109,174 @@ Time for Parallel Training: 0.213978 seconds
 [0;32m[----------] [mGlobal test environment set-up.
 [0;32m[----------] [m5 tests from gtestTrain
 [0;32m[ RUN      ] [mgtestTrain.small1
+Rank 0/3 started on node hpcc-gpu-5-4 [myGPU = 0, nGPUs = 1]
+Rank 2/3 started on node hpcc-gpu-5-4 [myGPU = 0, nGPUs = 1]
+Rank 1/3 started on node hpcc-gpu-5-4 [myGPU = 0, nGPUs = 1]
+Time for Sequential Training: 0.00223147 seconds
+Time for Parallel Training: 0.00904961 seconds
+[0;32m[       OK ] [mgtestTrain.small1 (148 ms)
+[0;32m[ RUN      ] [mgtestTrain.small2
+Rank 1/3 started on node hpcc-gpu-5-4 [myGPU = 0, nGPUs = 1]
+[0;32m[       OK ] [mgtestTrain.small1 (148 ms)
+[0;32m[ RUN      ] [mgtestTrain.small2
+[0;32m[       OK ] [mgtestTrain.small1 (148 ms)
+[0;32m[ RUN      ] [mgtestTrain.small2
+Rank 2/3 started on node hpcc-gpu-5-4 [myGPU = 0, nGPUs = 1]
+Rank 0/3 started on node hpcc-gpu-5-4 [myGPU = 0, nGPUs = 1]
+Time for Sequential Training: 0.00897937 seconds
+Time for Parallel Training: 0.0480419 seconds
+[0;32m[       OK ] [mgtestTrain.small2 (71 ms)
+[0;32m[ RUN      ] [mgtestTrain.small3
+Rank 2/3 started on node hpcc-gpu-5-4 [myGPU = 0, nGPUs = 1]
+[0;32m[       OK ] [mgtestTrain.small2 (71 ms)
+[0;32m[ RUN      ] [mgtestTrain.small3
+Rank 1/3 started on node hpcc-gpu-5-4 [myGPU = 0, nGPUs = 1]
+[0;32m[       OK ] [mgtestTrain.small2 (71 ms)
+[0;32m[ RUN      ] [mgtestTrain.small3
+Rank 0/3 started on node hpcc-gpu-5-4 [myGPU = 0, nGPUs = 1]
+Time for Sequential Training: 0.0700056 seconds
+Time for Parallel Training: 0.325387 seconds
+[0;32m[       OK ] [mgtestTrain.small3 (409 ms)
+[0;32m[ RUN      ] [mgtestTrain.medium
+Rank 2/3 started on node hpcc-gpu-5-4 [myGPU = 0, nGPUs = 1]
+[0;32m[       OK ] [mgtestTrain.small3 (409 ms)
+[0;32m[ RUN      ] [mgtestTrain.medium
+Rank 1/3 started on node hpcc-gpu-5-4 [myGPU = 0, nGPUs = 1]
+[0;32m[       OK ] [mgtestTrain.small3 (410 ms)
+[0;32m[ RUN      ] [mgtestTrain.medium
+Rank 0/3 started on node hpcc-gpu-5-4 [myGPU = 0, nGPUs = 1]
+Time for Sequential Training: 0.0514405 seconds
+Time for Parallel Training: 0.0995537 seconds
+[0;32m[       OK ] [mgtestTrain.medium (194 ms)
+[0;32m[ RUN      ] [mgtestTrain.large
+Rank 2/3 started on node hpcc-gpu-5-4 [myGPU = 0, nGPUs = 1]
+[0;32m[       OK ] [mgtestTrain.medium (194 ms)
+[0;32m[ RUN      ] [mgtestTrain.large
+Rank 1/3 started on node hpcc-gpu-5-4 [myGPU = 0, nGPUs = 1]
+[0;32m[       OK ] [mgtestTrain.medium (195 ms)
+[0;32m[ RUN      ] [mgtestTrain.large
+Rank 0/3 started on node hpcc-gpu-5-4 [myGPU = 0, nGPUs = 1]
+Time for Sequential Training: 0.336653 seconds
+Time for Parallel Training: 0.245308 seconds
+[0;32m[       OK ] [mgtestTrain.large (807 ms)
+[0;32m[----------] [m5 tests from gtestTrain (1631 ms total)
+
+[0;32m[----------] [mGlobal test environment tear-down
+[0;32m[==========] [m5 tests from 1 test suite ran. (1632 ms total)
+[0;32m[  PASSED  ] [m5 tests.
+[0;32m[       OK ] [mgtestTrain.large (807 ms)
+[0;32m[----------] [m5 tests from gtestTrain (1632 ms total)
+
+[0;32m[----------] [mGlobal test environment tear-down
+[0;32m[==========] [m5 tests from 1 test suite ran. (1632 ms total)
+[0;32m[  PASSED  ] [m5 tests.
+[0;32m[       OK ] [mgtestTrain.large (812 ms)
+[0;32m[----------] [m5 tests from gtestTrain (1637 ms total)
+
+[0;32m[----------] [mGlobal test environment tear-down
+[0;32m[==========] [m5 tests from 1 test suite ran. (1637 ms total)
+[0;32m[  PASSED  ] [m5 tests.
+----------------
 [0;32m[==========] [mRunning 5 tests from 1 test suite.
 [0;32m[----------] [mGlobal test environment set-up.
 [0;32m[----------] [m5 tests from gtestTrain
 [0;32m[ RUN      ] [mgtestTrain.small1
-Rank 0/4 started on node hpcc-gpu-5-3 [myGPU = 0, nGPUs = 4]
-Rank 2/4 started on node hpcc-gpu-5-3 [myGPU = 2, nGPUs = 4]
-Rank 3/4 started on node hpcc-gpu-5-3 [myGPU = 3, nGPUs = 4]
-Time for Sequential Training: 0.00195724 seconds
-Rank 1/4 started on node hpcc-gpu-5-3 [myGPU = 1, nGPUs = 4]
-Time for Parallel Training: 0.00701955 seconds
-[0;32m[       OK ] [mgtestTrain.small1 (226 ms)
+[0;32m[==========] [mRunning 5 tests from 1 test suite.
+[0;32m[----------] [mGlobal test environment set-up.
+[0;32m[----------] [m5 tests from gtestTrain
+[0;32m[ RUN      ] [mgtestTrain.small1
+[0;32m[==========] [mRunning 5 tests from 1 test suite.
+[0;32m[----------] [mGlobal test environment set-up.
+[0;32m[----------] [m5 tests from gtestTrain
+[0;32m[ RUN      ] [mgtestTrain.small1
+[0;32m[==========] [mRunning 5 tests from 1 test suite.
+[0;32m[----------] [mGlobal test environment set-up.
+[0;32m[----------] [m5 tests from gtestTrain
+[0;32m[ RUN      ] [mgtestTrain.small1
+Rank 3/4 started on node hpcc-gpu-5-4 [myGPU = 0, nGPUs = 1]
+Rank 2/4 started on node hpcc-gpu-5-4 [myGPU = 0, nGPUs = 1]
+Rank 0/4 started on node hpcc-gpu-5-4 [myGPU = 0, nGPUs = 1]
+Rank 1/4 started on node hpcc-gpu-5-4 [myGPU = 0, nGPUs = 1]
+Time for Sequential Training: 0.00205182 seconds
+Time for Parallel Training: 0.00841707 seconds
+[0;32m[       OK ] [mgtestTrain.small1 (185 ms)
 [0;32m[ RUN      ] [mgtestTrain.small2
-Rank 2/4 started on node hpcc-gpu-5-3 [myGPU = 2, nGPUs = 4]
-[0;32m[       OK ] [mgtestTrain.small1 (226 ms)
+Rank 1/4 started on node hpcc-gpu-5-4 [myGPU = 0, nGPUs = 1]
+[0;32m[       OK ] [mgtestTrain.small1 (185 ms)
 [0;32m[ RUN      ] [mgtestTrain.small2
-Rank 1/4 started on node hpcc-gpu-5-3 [myGPU = 1, nGPUs = 4]
-[0;32m[       OK ] [mgtestTrain.small1 (227 ms)
+Rank 2/4 started on node hpcc-gpu-5-4 [myGPU = 0, nGPUs = 1]
+[0;32m[       OK ] [mgtestTrain.small1 (185 ms)
 [0;32m[ RUN      ] [mgtestTrain.small2
-Rank 3/4 started on node hpcc-gpu-5-3 [myGPU = 3, nGPUs = 4]
-[0;32m[       OK ] [mgtestTrain.small1 (227 ms)
+Rank 3/4 started on node hpcc-gpu-5-4 [myGPU = 0, nGPUs = 1]
+[0;32m[       OK ] [mgtestTrain.small1 (185 ms)
 [0;32m[ RUN      ] [mgtestTrain.small2
-Rank 0/4 started on node hpcc-gpu-5-3 [myGPU = 0, nGPUs = 4]
-Time for Sequential Training: 0.00899285 seconds
-Time for Parallel Training: 0.0137696 seconds
-[0;32m[       OK ] [mgtestTrain.small2 (37 ms)
+Rank 0/4 started on node hpcc-gpu-5-4 [myGPU = 0, nGPUs = 1]
+Time for Sequential Training: 0.00902885 seconds
+Time for Parallel Training: 0.0622163 seconds
+[0;32m[       OK ] [mgtestTrain.small2 (86 ms)
 [0;32m[ RUN      ] [mgtestTrain.small3
-Rank 1/4 started on node hpcc-gpu-5-3 [myGPU = 1, nGPUs = 4]
-[0;32m[       OK ] [mgtestTrain.small2 (37 ms)
+Rank 2/4 started on node hpcc-gpu-5-4 [myGPU = 0, nGPUs = 1]
+[0;32m[       OK ] [mgtestTrain.small2 (86 ms)
 [0;32m[ RUN      ] [mgtestTrain.small3
-Rank 2/4 started on node hpcc-gpu-5-3 [myGPU = 2, nGPUs = 4]
-[0;32m[       OK ] [mgtestTrain.small2 (37 ms)
+Rank 3/4 started on node hpcc-gpu-5-4 [myGPU = 0, nGPUs = 1]
+[0;32m[       OK ] [mgtestTrain.small2 (86 ms)
 [0;32m[ RUN      ] [mgtestTrain.small3
-Rank 3/4 started on node hpcc-gpu-5-3 [myGPU = 3, nGPUs = 4]
-[0;32m[       OK ] [mgtestTrain.small2 (37 ms)
+Rank 1/4 started on node hpcc-gpu-5-4 [myGPU = 0, nGPUs = 1]
+[0;32m[       OK ] [mgtestTrain.small2 (86 ms)
 [0;32m[ RUN      ] [mgtestTrain.small3
-Rank 0/4 started on node hpcc-gpu-5-3 [myGPU = 0, nGPUs = 4]
-Time for Sequential Training: 0.0697395 seconds
-Time for Parallel Training: 0.0894949 seconds
-[0;32m[       OK ] [mgtestTrain.small3 (174 ms)
+Rank 0/4 started on node hpcc-gpu-5-4 [myGPU = 0, nGPUs = 1]
+Time for Sequential Training: 0.0698213 seconds
+Time for Parallel Training: 0.416748 seconds
+[0;32m[       OK ] [mgtestTrain.small3 (501 ms)
 [0;32m[ RUN      ] [mgtestTrain.medium
-Rank 2/4 started on node hpcc-gpu-5-3 [myGPU = 2, nGPUs = 4]
-[0;32m[       OK ] [mgtestTrain.small3 (174 ms)
+Rank 3/4 started on node hpcc-gpu-5-4 [myGPU = 0, nGPUs = 1]
+[0;32m[       OK ] [mgtestTrain.small3 (501 ms)
 [0;32m[ RUN      ] [mgtestTrain.medium
-Rank 3/4 started on node hpcc-gpu-5-3 [myGPU = 3, nGPUs = 4]
-[0;32m[       OK ] [mgtestTrain.small3 (175 ms)
+Rank 2/4 started on node hpcc-gpu-5-4 [myGPU = 0, nGPUs = 1]
+[0;32m[       OK ] [mgtestTrain.small3 (501 ms)
 [0;32m[ RUN      ] [mgtestTrain.medium
-Rank 1/4 started on node hpcc-gpu-5-3 [myGPU = 1, nGPUs = 4]
-[0;32m[       OK ] [mgtestTrain.small3 (174 ms)
+Rank 1/4 started on node hpcc-gpu-5-4 [myGPU = 0, nGPUs = 1]
+[0;32m[       OK ] [mgtestTrain.small3 (501 ms)
 [0;32m[ RUN      ] [mgtestTrain.medium
-Rank 0/4 started on node hpcc-gpu-5-3 [myGPU = 0, nGPUs = 4]
-Time for Sequential Training: 0.0508039 seconds
-Time for Parallel Training: 0.0515257 seconds
-[0;32m[       OK ] [mgtestTrain.medium (145 ms)
+Rank 0/4 started on node hpcc-gpu-5-4 [myGPU = 0, nGPUs = 1]
+Time for Sequential Training: 0.0511631 seconds
+Time for Parallel Training: 0.132336 seconds
+[0;32m[       OK ] [mgtestTrain.medium (227 ms)
 [0;32m[ RUN      ] [mgtestTrain.large
-Rank 2/4 started on node hpcc-gpu-5-3 [myGPU = 2, nGPUs = 4]
-[0;32m[       OK ] [mgtestTrain.medium (145 ms)
+Rank 3/4 started on node hpcc-gpu-5-4 [myGPU = 0, nGPUs = 1]
+[0;32m[       OK ] [mgtestTrain.medium (228 ms)
 [0;32m[ RUN      ] [mgtestTrain.large
-Rank 3/4 started on node hpcc-gpu-5-3 [myGPU = 3, nGPUs = 4]
-[0;32m[       OK ] [mgtestTrain.medium (145 ms)
+Rank 2/4 started on node hpcc-gpu-5-4 [myGPU = 0, nGPUs = 1]
+[0;32m[       OK ] [mgtestTrain.medium (228 ms)
 [0;32m[ RUN      ] [mgtestTrain.large
-Rank 1/4 started on node hpcc-gpu-5-3 [myGPU = 1, nGPUs = 4]
-[0;32m[       OK ] [mgtestTrain.medium (146 ms)
+Rank 1/4 started on node hpcc-gpu-5-4 [myGPU = 0, nGPUs = 1]
+[0;32m[       OK ] [mgtestTrain.medium (228 ms)
 [0;32m[ RUN      ] [mgtestTrain.large
-Rank 0/4 started on node hpcc-gpu-5-3 [myGPU = 0, nGPUs = 4]
-Time for Sequential Training: 0.336939 seconds
-Time for Parallel Training: 0.151013 seconds
-[0;32m[       OK ] [mgtestTrain.large (718 ms)
-[0;32m[----------] [m5 tests from gtestTrain (1304 ms total)
+Rank 0/4 started on node hpcc-gpu-5-4 [myGPU = 0, nGPUs = 1]
+Time for Sequential Training: 0.337614 seconds
+Time for Parallel Training: 0.309646 seconds
+[0;32m[       OK ] [mgtestTrain.large (874 ms)
+[0;32m[----------] [m5 tests from gtestTrain (1875 ms total)
 
 [0;32m[----------] [mGlobal test environment tear-down
-[0;32m[==========] [m5 tests from 1 test suite ran. (1304 ms total)
+[0;32m[==========] [m5 tests from 1 test suite ran. (1875 ms total)
 [0;32m[  PASSED  ] [m5 tests.
-[0;32m[       OK ] [mgtestTrain.large (718 ms)
-[0;32m[----------] [m5 tests from gtestTrain (1304 ms total)
+[0;32m[       OK ] [mgtestTrain.large (874 ms)
+[0;32m[----------] [m5 tests from gtestTrain (1875 ms total)
 
 [0;32m[----------] [mGlobal test environment tear-down
-[0;32m[==========] [m5 tests from 1 test suite ran. (1304 ms total)
+[0;32m[==========] [m5 tests from 1 test suite ran. (1875 ms total)
 [0;32m[  PASSED  ] [m5 tests.
-[0;32m[       OK ] [mgtestTrain.large (718 ms)
-[0;32m[----------] [m5 tests from gtestTrain (1304 ms total)
+[0;32m[       OK ] [mgtestTrain.large (874 ms)
+[0;32m[----------] [m5 tests from gtestTrain (1875 ms total)
 
 [0;32m[----------] [mGlobal test environment tear-down
-[0;32m[==========] [m5 tests from 1 test suite ran. (1304 ms total)
+[0;32m[==========] [m5 tests from 1 test suite ran. (1875 ms total)
 [0;32m[  PASSED  ] [m5 tests.
-[0;32m[       OK ] [mgtestTrain.large (723 ms)
-[0;32m[----------] [m5 tests from gtestTrain (1309 ms total)
+[0;32m[       OK ] [mgtestTrain.large (878 ms)
+[0;32m[----------] [m5 tests from gtestTrain (1880 ms total)
 
 [0;32m[----------] [mGlobal test environment tear-down
-[0;32m[==========] [m5 tests from 1 test suite ran. (1309 ms total)
+[0;32m[==========] [m5 tests from 1 test suite ran. (1880 ms total)
 [0;32m[  PASSED  ] [m5 tests.
 ----------------
