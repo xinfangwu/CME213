@@ -320,6 +320,13 @@ nn_real DataParallelNeuralNetwork::loss(const DeviceMatrix &y, nn_real weight) {
   /**
    * TODO: Return the sum of (data_loss + reg_loss) across all MPI processes.
    */
+
+  nn_real local_loss = data_loss + reg_loss;
+  nn_real global_loss = 0;
+  MPI_Allreduce(&local_loss, &global_loss, 1, MPI_FP, MPI_SUM, MPI_COMM_WORLD);
+
+  return global_loss;
+
 }
 
 void DataParallelNeuralNetwork::backward(const DeviceMatrix &y,
@@ -348,6 +355,9 @@ void DataParallelNeuralNetwork::backward(const DeviceMatrix &y,
    * HINT: Use grads.gpu_mem_pool and grads.total_elements. The 'division' step
    * of computing the average has already been completed using grad_weight.
    */
+
+  nn_real *grad_data = grads.gpu_mem_pool->memptr();
+  MPI_Allreduce(MPI_IN_PLACE, grad_data, grads.total_elements, MPI_FP, MPI_SUM, MPI_COMM_WORLD);
 }
 
 void DataParallelNeuralNetwork::step() {
@@ -370,6 +380,87 @@ void DataParallelNeuralNetwork::train(NeuralNetwork &nn, arma::Mat<nn_real> &X,
    * The last minibatch in an epoch may be smaller than previous minibatches in 
    * the epoch; you can use DeviceMatrix::set_n_cols() to deal with this case.
    */
+  int N = X.n_cols;
+  int iter = 0;
+  bool print_flag = false;
+
+  assert(X.n_cols == y.n_cols);
+
+  int num_batches = get_num_batches(N, hparams.batch_size);
+  int rank, num_procs;
+  MPI_SAFE_CALL(MPI_Comm_rank(MPI_COMM_WORLD, &rank));
+  MPI_SAFE_CALL(MPI_Comm_size(MPI_COMM_WORLD, &num_procs));
+
+  if (num_procs > 1) {
+      // MPI_Bcast(&buffer,count,datatype,root,comm)
+      MPI_Bcast(X.memptr(), X.n_elem, MPI_FP, 0, MPI_COMM_WORLD);
+      MPI_Bcast(y.memptr(), y.n_elem, MPI_FP, 0, MPI_COMM_WORLD);
+  }
+
+  for (int epoch = 0; epoch < hparams.num_epochs; epoch++) {
+    int batch_start = 0;
+    for (int batch = 0; batch < num_batches; batch++) {
+      
+      
+      // batch 
+      int batch_size = get_batch_size(N, hparams.batch_size, batch);
+      int last_batch_col = std::min(batch_start + batch_size, N);
+      assert(last_batch_col <= X.n_cols);
+      assert(last_batch_col <= y.n_cols);
+      assert(last_batch_col > batch_start);
+      assert(batch < num_batches - 1 || last_batch_col == X.n_cols);
+      // update the batch size 
+      batch_size = last_batch_col - batch_start;
+
+
+      // mini batch in batch 
+      int mini_batch_size = get_mini_batch_size(batch_size, num_procs, rank);
+      int offset = get_offset(batch_size, num_procs, rank);
+      int start = batch_start + offset;
+      int end = std::min(start + mini_batch_size, last_batch_col);
+      assert(end <= last_batch_col);
+      assert(end > start);
+      // update the mini batch size 
+      mini_batch_size = end - start;
+
+      
+      // set up the mini batch 
+      arma::Mat<nn_real> X_mini_batch = X.cols(start, end - 1);
+      arma::Mat<nn_real> y_mini_batch = y.cols(start, end - 1);
+
+      DeviceMatrix X_mini_batch_gpu(X_mini_batch);
+      X_mini_batch_gpu.set_n_cols(mini_batch_size);
+      DeviceMatrix y_mini_batch_gpu(y_mini_batch);
+      y_mini_batch_gpu.set_n_cols(mini_batch_size);
+
+      // set up the cache 
+      cache.a[0].set_n_cols(mini_batch_size);
+      cache.a[1].set_n_cols(mini_batch_size);
+      cache.z[0].set_n_cols(mini_batch_size);
+      cache.z[1].set_n_cols(mini_batch_size);
+      cache.X.set_n_cols(mini_batch_size); 
+      cache.yc.set_n_cols(mini_batch_size);
+
+      forward(X_mini_batch_gpu);
+      backward(y_mini_batch_gpu, 1.0 / batch_size); // use 1.0 to make the weight become float 
+
+          
+      print_flag = (hparams.debug == 1) &&
+        ((iter % std::max(1, ((hparams.num_epochs * num_batches) / 4))) == 0);
+
+      if (print_flag && rank == 0) {
+        printf("Parallel loss at iteration %d of epoch %d/%d = %25.20f\n", iter,
+               epoch, hparams.num_epochs,
+               loss(y_mini_batch_gpu, 1.0 / (batch_size)));
+      }
+
+      step();
+
+      batch_start = last_batch_col;
+      iter++;
+    }
+    MPI_Barrier(MPI_COMM_WORLD);
+  }
 }
 
 void DataParallelNeuralNetwork::to_cpu(NeuralNetwork &nn) {
