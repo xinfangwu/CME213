@@ -1,0 +1,89 @@
+Running main() from ./googletest-main/googletest/src/gtest_main.cc
+[==========] Running 4 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 4 tests from SharedGEMMTest
+[ RUN      ] SharedGEMMTest.deviceWarmup
+[       OK ] SharedGEMMTest.deviceWarmup (0 ms)
+[ RUN      ] SharedGEMMTest.small
+
+GEMM: M = 2; N = 2; K = 2
+Relative Inf error = 0
+Time for reference GEMM implementation: 4.3393e-05 seconds
+Time for my GEMM implementation: 1.3897e-05 seconds
+Reference GEMM is 0.320259 times faster
+
+GEMM: M = 4; N = 4; K = 4
+Relative Inf error = 0
+Time for reference GEMM implementation: 1.2965e-05 seconds
+Time for my GEMM implementation: 1.2323e-05 seconds
+Reference GEMM is 0.950482 times faster
+
+GEMM: M = 8; N = 8; K = 8
+Relative Inf error = 0
+Time for reference GEMM implementation: 1.3646e-05 seconds
+Time for my GEMM implementation: 1.8154e-05 seconds
+Reference GEMM is 1.33035 times faster
+
+GEMM: M = 16; N = 16; K = 16
+Relative Inf error = 0
+Time for reference GEMM implementation: 1.3385e-05 seconds
+Time for my GEMM implementation: 1.4367e-05 seconds
+Reference GEMM is 1.07337 times faster
+
+GEMM: M = 32; N = 32; K = 32
+Relative Inf error = 0
+Time for reference GEMM implementation: 1.8425e-05 seconds
+Time for my GEMM implementation: 1.6051e-05 seconds
+Reference GEMM is 0.871153 times faster
+
+GEMM: M = 37; N = 41; K = 43
+Relative Inf error = 0
+Time for reference GEMM implementation: 1.6081e-05 seconds
+Time for my GEMM implementation: 1.9978e-05 seconds
+Reference GEMM is 1.24234 times faster
+[       OK ] SharedGEMMTest.small (2205 ms)
+[ RUN      ] SharedGEMMTest.medium
+
+GEMM: M = 256; N = 128; K = 256
+Relative Inf error = 0
+Time for reference GEMM implementation: 2.2172e-05 seconds
+Time for my GEMM implementation: 5.1819e-05 seconds
+Reference GEMM is 2.33714 times faster
+
+GEMM: M = 512; N = 256; K = 512
+Relative Inf error = 0
+Time for reference GEMM implementation: 4.8281e-05 seconds
+Time for my GEMM implementation: 0.000104128 seconds
+Reference GEMM is 2.15671 times faster
+
+GEMM: M = 599; N = 433; K = 751
+Relative Inf error = 0
+Time for reference GEMM implementation: 0.000102605 seconds
+Time for my GEMM implementation: 0.000207214 seconds
+Reference GEMM is 2.01953 times faster
+[       OK ] SharedGEMMTest.medium (11 ms)
+[ RUN      ] SharedGEMMTest.large
+
+GEMM: M = 1000; N = 2000; K = 2000
+Relative Inf error = 0
+Time for reference GEMM implementation: 0.00148487 seconds
+Time for my GEMM implementation: 0.00288845 seconds
+Reference GEMM is 1.94525 times faster
+
+GEMM: M = 2000; N = 4000; K = 4000
+Relative Inf error = 0
+Time for reference GEMM implementation: 0.0103229 seconds
+Time for my GEMM implementation: 0.0223844 seconds
+Reference GEMM is 2.16843 times faster
+
+GEMM: M = 7817; N = 7919; K = 6869
+Relative Inf error = 0
+Time for reference GEMM implementation: 0.124186 seconds
+Time for my GEMM implementation: 0.250422 seconds
+Reference GEMM is 2.01651 times faster
+[       OK ] SharedGEMMTest.large (1373 ms)
+[----------] 4 tests from SharedGEMMTest (3590 ms total)
+
+[----------] Global test environment tear-down
+[==========] 4 tests from 1 test suite ran. (3590 ms total)
+[  PASSED  ] 4 tests.
