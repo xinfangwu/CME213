@@ -1,0 +1,103 @@
+Starting at Sat Jun  1 00:21:06 PDT 2024
+
+make: Nothing to be done for 'default'.
+
+Output from main_q1
+----------------
+Running main() from ./googletest-main/googletest/src/gtest_main.cc
+[==========] Running 1 test from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 1 test from testQ1
+[ RUN      ] testQ1.test
+Parallel
+Sum Even: 757361650
+Sum Odd: 742539102
+Time: 0.00816659
+Serial
+Sum Even: 757361650
+Sum Odd: 742539102
+Time: 0.0327481
+[       OK ] testQ1.test (437 ms)
+[----------] 1 test from testQ1 (437 ms total)
+
+[----------] Global test environment tear-down
+[==========] 1 test from 1 test suite ran. (437 ms total)
+[  PASSED  ] 1 test.
+
+Output from main_q2
+----------------
+Running main() from ./googletest-main/googletest/src/gtest_main.cc
+[==========] Running 7 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 7 tests from testQ2
+[ RUN      ] testQ2.test1
+[       OK ] testQ2.test1 (13 ms)
+[ RUN      ] testQ2.test2
+[       OK ] testQ2.test2 (4 ms)
+[ RUN      ] testQ2.test3
+[       OK ] testQ2.test3 (1 ms)
+[ RUN      ] testQ2.test4
+[       OK ] testQ2.test4 (4 ms)
+[ RUN      ] testQ2.test5
+[       OK ] testQ2.test5 (10 ms)
+[ RUN      ] testQ2.serialSortTest
+Serial Radix Sort: PASS
+stl: 0.318888
+serial radix: 0.04265
+[       OK ] testQ2.serialSortTest (533 ms)
+[ RUN      ] testQ2.parallelSortTest
+Parallel Radix Sort: PASS
+stl: 0.320036
+parallel radix: 0.027678
+[       OK ] testQ2.parallelSortTest (508 ms)
+[----------] 7 tests from testQ2 (1076 ms total)
+
+[----------] Global test environment tear-down
+[==========] 7 tests from 1 test suite ran. (1076 ms total)
+[  PASSED  ] 7 tests.
+
+Output from main_q2_part6
+----------------
+Running main() from ./googletest-main/googletest/src/gtest_main.cc
+[==========] Running 8 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 8 tests from testQ2
+[ RUN      ] testQ2.test1
+[       OK ] testQ2.test1 (3 ms)
+[ RUN      ] testQ2.test2
+[       OK ] testQ2.test2 (3 ms)
+[ RUN      ] testQ2.test3
+[       OK ] testQ2.test3 (0 ms)
+[ RUN      ] testQ2.test4
+[       OK ] testQ2.test4 (2 ms)
+[ RUN      ] testQ2.test5
+[       OK ] testQ2.test5 (5 ms)
+[ RUN      ] testQ2.serialSortTest
+Serial Radix Sort: PASS
+stl: 0.304656
+serial radix: 0.042423
+[       OK ] testQ2.serialSortTest (514 ms)
+[ RUN      ] testQ2.parallelSortTest
+Parallel Radix Sort: PASS
+stl: 0.305584
+parallel radix: 0.0252731
+[       OK ] testQ2.parallelSortTest (492 ms)
+[ RUN      ] testQ2.radixSortTest
+Threads Blocks / Timing
+         1       2       4       8      12      16      24      32      40      48
+   1    0.043   0.039   0.040   0.045   0.043   0.044   0.052   0.050   0.055   0.058
+   2    0.040   0.022   0.022   0.024   0.034   0.027   0.031   0.032   0.034   0.038
+   4    0.044   0.021   0.017   0.018   0.022   0.020   0.025   0.025   0.028   0.031
+   8    0.055   0.021   0.016   0.013   0.016   0.015   0.019   0.020   0.023   0.026
+  12    0.056   0.028   0.023   0.017   0.016   0.020   0.020   0.024   0.027   0.028
+  16    0.075   0.028   0.025   0.018   0.016   0.016   0.021   0.022   0.026   0.029
+  24    0.080   0.037   0.031   0.047   0.030   0.038   0.023   0.029   0.039   0.033
+  32    0.176   0.125   0.085   0.053   0.048   0.041   0.049   0.041   0.041   0.039
+  40    0.225   0.117   0.131   0.085   0.043   0.059   0.043   0.039   0.056   0.052
+  48    0.306   0.145   0.115   0.096   0.088   0.050   0.046   0.051   0.039   0.059
+[       OK ] testQ2.radixSortTest (5693 ms)
+[----------] 8 tests from testQ2 (6719 ms total)
+
+[----------] Global test environment tear-down
+[==========] 8 tests from 1 test suite ran. (6720 ms total)
+[  PASSED  ] 8 tests.
