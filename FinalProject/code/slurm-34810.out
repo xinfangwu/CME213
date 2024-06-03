@@ -1,0 +1,38 @@
+make: Nothing to be done for 'default'.
+Note: Google Test filter = gtestProfile.*
+[==========] Running 1 test from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 1 test from gtestProfile
+[ RUN      ] gtestProfile.nsys1
+Note: Google Test filter = gtestProfile.*
+[==========] Running 1 test from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 1 test from gtestProfile
+[ RUN      ] gtestProfile.nsys1
+Rank 1/2 started on node hpcc-gpu-5-4 [myGPU = 1, nGPUs = 2]
+Rank 0/2 started on node hpcc-gpu-5-4 [myGPU = 0, nGPUs = 2]
+batch_size=3000; num_procs=2; hidden_size=512;
+Size of training set =  60000
+Size of testing set =   10000
+Precision on testing set for sequential training =   0.7279000000000000
+[       OK ] gtestProfile.nsys1 (4902 ms)
+[----------] 1 test from gtestProfile (4902 ms total)
+
+[----------] Global test environment tear-down
+[==========] 1 test from 1 test suite ran. (4902 ms total)
+[  PASSED  ] 1 test.
+Precision on testing set for parallel training =     0.7279000000000000
+Rel. err. in W[0]: 6.35738e-17
+Rel. err. in b[0]: 6.29034e-16
+Rel. err. in W[1]: 1.60639e-16
+Rel. err. in b[1]: 9.06442e-16
+[       OK ] gtestProfile.nsys1 (5169 ms)
+[----------] 1 test from gtestProfile (5169 ms total)
+
+[----------] Global test environment tear-down
+[==========] 1 test from 1 test suite ran. (5169 ms total)
+[  PASSED  ] 1 test.
+Generating '/tmp/nsys-report-9a24.qdstrm'
+[1/1] [0%                          ] report1.nsys-rep[1/1] [0%                          ] report1.nsys-rep[1/1] [10%                         ] report1.nsys-rep[1/1] [===========53%              ] report1.nsys-rep[1/1] [============54%             ] report1.nsys-rep[1/1] [============55%             ] report1.nsys-rep[1/1] [============56%             ] report1.nsys-rep[1/1] [============57%             ] report1.nsys-rep[1/1] [=============58%            ] report1.nsys-rep[1/1] [=============59%            ] report1.nsys-rep[1/1] [=============60%            ] report1.nsys-rep[1/1] [==============61%           ] report1.nsys-rep[1/1] [==============62%           ] report1.nsys-rep[1/1] [==============63%           ] report1.nsys-rep[1/1] [==============64%           ] report1.nsys-rep[1/1] [===============65%          ] report1.nsys-rep[1/1] [===============66%          ] report1.nsys-rep[1/1] [===============67%          ] report1.nsys-rep[1/1] [================68%         ] report1.nsys-rep[1/1] [================69%         ] report1.nsys-rep[1/1] [================70%         ] report1.nsys-rep[1/1] [================71%         ] report1.nsys-rep[1/1] [=================74%        ] report1.nsys-rep[1/1] [===================81%      ] report1.nsys-rep[1/1] [=====================88%    ] report1.nsys-rep[1/1] [=======================95%  ] report1.nsys-rep[1/1] [========================100%] report1.nsys-rep[1/1] [========================100%] report1.nsys-rep[1/1] [========================100%] report1.nsys-rep
+Generated:
+    /home/cme213/xinfangw/CME213/FinalProject/code/report1.nsys-rep

@@ -1,0 +1,57 @@
+[0;33mNote: Google Test filter = gtestProfile.*
+[0;33mNote: Google Test filter = gtestProfile.*
+[m[0;32m[==========] [mRunning 1 test from 1 test suite.
+[0;32m[----------] [mGlobal test environment set-up.
+[0;32m[----------] [m1 test from gtestProfile
+[0;32m[ RUN      ] [mgtestProfile.nsys1
+[0;33mNote: Google Test filter = gtestProfile.*
+[m[0;32m[==========] [mRunning 1 test from 1 test suite.
+[0;32m[----------] [mGlobal test environment set-up.
+[0;32m[----------] [m1 test from gtestProfile
+[0;32m[ RUN      ] [mgtestProfile.nsys1
+[0;33mNote: Google Test filter = gtestProfile.*
+[m[0;32m[==========] [mRunning 1 test from 1 test suite.
+[0;32m[----------] [mGlobal test environment set-up.
+[0;32m[----------] [m1 test from gtestProfile
+[0;32m[ RUN      ] [mgtestProfile.nsys1
+[m[0;32m[==========] [mRunning 1 test from 1 test suite.
+[0;32m[----------] [mGlobal test environment set-up.
+[0;32m[----------] [m1 test from gtestProfile
+[0;32m[ RUN      ] [mgtestProfile.nsys1
+Rank 3/4 started on node hpcc-gpu-5-1 [myGPU = 3, nGPUs = 4]
+Rank 2/4 started on node hpcc-gpu-5-1 [myGPU = 2, nGPUs = 4]
+Rank 1/4 started on node hpcc-gpu-5-1 [myGPU = 1, nGPUs = 4]
+Rank 0/4 started on node hpcc-gpu-5-1 [myGPU = 0, nGPUs = 4]
+batch_size=3000; num_procs=4; hidden_size=512;
+Size of training set =  60000
+Size of testing set =   10000
+Precision on testing set for sequential training =   0.7279000000000000
+[0;32m[       OK ] [mgtestProfile.nsys1 (9312 ms)
+[0;32m[----------] [m1 test from gtestProfile (9312 ms total)
+
+[0;32m[----------] [mGlobal test environment tear-down
+[0;32m[==========] [m1 test from 1 test suite ran. (9312 ms total)
+[0;32m[  PASSED  ] [m1 test.
+[0;32m[       OK ] [mgtestProfile.nsys1 (9312 ms)
+[0;32m[----------] [m1 test from gtestProfile (9312 ms total)
+
+[0;32m[----------] [mGlobal test environment tear-down
+[0;32m[==========] [m1 test from 1 test suite ran. (9312 ms total)
+[0;32m[  PASSED  ] [m1 test.
+[0;32m[       OK ] [mgtestProfile.nsys1 (9312 ms)
+[0;32m[----------] [m1 test from gtestProfile (9313 ms total)
+
+[0;32m[----------] [mGlobal test environment tear-down
+[0;32m[==========] [m1 test from 1 test suite ran. (9313 ms total)
+[0;32m[  PASSED  ] [m1 test.
+Precision on testing set for parallel training =     0.7279000000000000
+Rel. err. in W[0]: 6.20529e-17
+Rel. err. in b[0]: 6.25289e-16
+Rel. err. in W[1]: 1.18151e-16
+Rel. err. in b[1]: 7.36324e-16
+[0;32m[       OK ] [mgtestProfile.nsys1 (9772 ms)
+[0;32m[----------] [m1 test from gtestProfile (9772 ms total)
+
+[0;32m[----------] [mGlobal test environment tear-down
+[0;32m[==========] [m1 test from 1 test suite ran. (9772 ms total)
+[0;32m[  PASSED  ] [m1 test.

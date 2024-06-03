@@ -1,0 +1,161 @@
+[0;32m[==========] [mRunning 7 tests from 2 test suites.
+[0;32m[----------] [mGlobal test environment set-up.
+[0;32m[----------] [m6 tests from gtestTrain
+[0;32m[ RUN      ] [mgtestTrain.small1
+[0;32m[==========] [mRunning 7 tests from 2 test suites.
+[0;32m[----------] [mGlobal test environment set-up.
+[0;32m[----------] [m6 tests from gtestTrain
+[0;32m[ RUN      ] [mgtestTrain.small1
+[0;32m[==========] [mRunning 7 tests from 2 test suites.
+[0;32m[----------] [mGlobal test environment set-up.
+[0;32m[----------] [m6 tests from gtestTrain
+[0;32m[ RUN      ] [mgtestTrain.small1
+[0;32m[==========] [mRunning 7 tests from 2 test suites.
+[0;32m[----------] [mGlobal test environment set-up.
+[0;32m[----------] [m6 tests from gtestTrain
+[0;32m[ RUN      ] [mgtestTrain.small1
+Rank 3/4 started on node hpcc-gpu-5-1 [myGPU = 3, nGPUs = 4]
+Rank 2/4 started on node hpcc-gpu-5-1 [myGPU = 2, nGPUs = 4]
+Rank 1/4 started on node hpcc-gpu-5-1 [myGPU = 1, nGPUs = 4]
+Rank 0/4 started on node hpcc-gpu-5-1 [myGPU = 0, nGPUs = 4]
+batch_size=32; num_procs=4; hidden_size=32;
+Time for Sequential Training: 0.124173 seconds
+[0;32m[       OK ] [mgtestTrain.small1 (774 ms)
+[0;32m[ RUN      ] [mgtestTrain.small2
+Rank 1/4 started on node hpcc-gpu-5-1 [myGPU = 1, nGPUs = 4]
+[0;32m[       OK ] [mgtestTrain.small1 (774 ms)
+[0;32m[ RUN      ] [mgtestTrain.small2
+Rank 2/4 started on node hpcc-gpu-5-1 [myGPU = 2, nGPUs = 4]
+[0;32m[       OK ] [mgtestTrain.small1 (774 ms)
+[0;32m[ RUN      ] [mgtestTrain.small2
+Rank 3/4 started on node hpcc-gpu-5-1 [myGPU = 3, nGPUs = 4]
+Mean time for Parallel Training: (rank 0; repeats = 10): 0.00636309 seconds
+Std. deviation of time for Parallel Training (repeats = 10): 0.0083366 seconds
+[0;32m[       OK ] [mgtestTrain.small1 (771 ms)
+[0;32m[ RUN      ] [mgtestTrain.small2
+Rank 0/4 started on node hpcc-gpu-5-1 [myGPU = 0, nGPUs = 4]
+batch_size=32; num_procs=4; hidden_size=32;
+Time for Sequential Training: 0.0581885 seconds
+[0;32m[       OK ] [mgtestTrain.small2 (1370 ms)
+[0;32m[       OK ] [mgtestTrain.small2 (1370 ms)
+[0;32m[ RUN      ] [mgtestTrain.small3
+Rank 3/4 started on node hpcc-gpu-5-1 [myGPU = 3, nGPUs = 4]
+Mean time for Parallel Training: (rank 0; repeats = 10): 0.111089 seconds
+Std. deviation of time for Parallel Training (repeats = 10): 0.0455379 seconds
+[0;32m[       OK ] [mgtestTrain.small2 (1371 ms)
+[0;32m[ RUN      ] [mgtestTrain.small3
+Rank 2/4 started on node hpcc-gpu-5-1 [myGPU = 2, nGPUs = 4]
+[0;32m[       OK ] [mgtestTrain.small2 (1370 ms)
+[0;32m[ RUN      ] [mgtestTrain.small3
+Rank 0/4 started on node hpcc-gpu-5-1 [myGPU = 0, nGPUs = 4]
+batch_size=32; num_procs=4; hidden_size=32;
+[0;32m[ RUN      ] [mgtestTrain.small3
+Rank 1/4 started on node hpcc-gpu-5-1 [myGPU = 1, nGPUs = 4]
+Time for Sequential Training: 0.520948 seconds
+[0;32m[       OK ] [mgtestTrain.small3 (7904 ms)
+[0;32m[ RUN      ] [mgtestTrain.medium
+Rank 1/4 started on node hpcc-gpu-5-1 [myGPU = 1, nGPUs = 4]
+[0;32m[       OK ] [mgtestTrain.small3 (7916 ms)
+[0;32m[ RUN      ] [mgtestTrain.medium
+Rank 3/4 started on node hpcc-gpu-5-1 [myGPU = 3, nGPUs = 4]
+[0;32m[       OK ] [mgtestTrain.small3 (7916 ms)
+[0;32m[ RUN      ] [mgtestTrain.medium
+Rank 2/4 started on node hpcc-gpu-5-1 [myGPU = 2, nGPUs = 4]
+Mean time for Parallel Training: (rank 0; repeats = 10): 0.710888 seconds
+Std. deviation of time for Parallel Training (repeats = 10): 0.093519 seconds
+[0;32m[       OK ] [mgtestTrain.small3 (7916 ms)
+[0;32m[ RUN      ] [mgtestTrain.medium
+Rank 0/4 started on node hpcc-gpu-5-1 [myGPU = 0, nGPUs = 4]
+batch_size=64; num_procs=4; hidden_size=128;
+Time for Sequential Training: 0.373872 seconds
+[0;32m[       OK ] [mgtestTrain.medium (4108 ms)
+[0;32m[ RUN      ] [mgtestTrain.large
+Rank 1/4 started on node hpcc-gpu-5-1 [myGPU = 1, nGPUs = 4]
+[0;32m[       OK ] [mgtestTrain.medium (4108 ms)
+[0;32m[ RUN      ] [mgtestTrain.large
+Rank 3/4 started on node hpcc-gpu-5-1 [myGPU = 3, nGPUs = 4]
+[0;32m[       OK ] [mgtestTrain.medium (4108 ms)
+Mean time for Parallel Training: (rank 0; repeats = 10): 0.310985 seconds
+Std. deviation of time for Parallel Training (repeats = 10): 0.0535507 seconds
+[0;32m[ RUN      ] [mgtestTrain.large
+Rank 2/4 started on node hpcc-gpu-5-1 [myGPU = 2, nGPUs = 4]
+[0;32m[       OK ] [mgtestTrain.medium (4125 ms)
+[0;32m[ RUN      ] [mgtestTrain.large
+Rank 0/4 started on node hpcc-gpu-5-1 [myGPU = 0, nGPUs = 4]
+batch_size=67; num_procs=4; hidden_size=1013;
+Time for Sequential Training: 2.11244 seconds
+[0;32m[       OK ] [mgtestTrain.large (13164 ms)
+[0;32m[ RUN      ] [mgtestTrain.custom
+Rank 2/4 started on node hpcc-gpu-5-1 [myGPU = 2, nGPUs = 4]
+[0;32m[       OK ] [mgtestTrain.large (13164 ms)
+[0;32m[ RUN      ] [mgtestTrain.custom
+Rank 3/4 started on node hpcc-gpu-5-1 [myGPU = 3, nGPUs = 4]
+[0;32m[       OK ] [mgtestTrain.large (13165 ms)
+[0;32m[ RUN      ] [mgtestTrain.custom
+Rank 1/4 started on node hpcc-gpu-5-1 [myGPU = 1, nGPUs = 4]
+Mean time for Parallel Training: (rank 0; repeats = 10): 0.795615 seconds
+Std. deviation of time for Parallel Training (repeats = 10): 0.284258 seconds
+[0;32m[       OK ] [mgtestTrain.large (13145 ms)
+[0;32m[ RUN      ] [mgtestTrain.custom
+Rank 0/4 started on node hpcc-gpu-5-1 [myGPU = 0, nGPUs = 4]
+batch_size=3200; num_procs=4; hidden_size=512;
+Time for Sequential Training: 3.76269 seconds
+[0;32m[       OK ] [mgtestTrain.custom (9228 ms)
+[0;32m[----------] [m6 tests from gtestTrain (36564 ms total)
+
+[0;32m[----------] [m1 test from gtestProfile
+[0;32m[ RUN      ] [mgtestProfile.nsys1
+[0;32m[       OK ] [mgtestTrain.custom (9229 ms)
+[0;32m[----------] [m6 tests from gtestTrain (36564 ms total)
+
+[0;32m[----------] [m1 test from gtestProfile
+[0;32m[ RUN      ] [mgtestProfile.nsys1
+Rank 3/4 started on node hpcc-gpu-5-1 [myGPU = 3, nGPUs = 4]
+[0;32m[       OK ] [mgtestTrain.custom (9228 ms)
+[0;32m[----------] [m6 tests from gtestTrain (36565 ms total)
+
+[0;32m[----------] [m1 test from gtestProfile
+[0;32m[ RUN      ] [mgtestProfile.nsys1
+Rank 1/4 started on node hpcc-gpu-5-1 [myGPU = 1, nGPUs = 4]
+Rank 2/4 started on node hpcc-gpu-5-1 [myGPU = 2, nGPUs = 4]
+Mean time for Parallel Training: (rank 0; repeats = 10): 0.278859 seconds
+Std. deviation of time for Parallel Training (repeats = 10): 0.0342743 seconds
+[0;32m[       OK ] [mgtestTrain.custom (9255 ms)
+[0;32m[----------] [m6 tests from gtestTrain (36590 ms total)
+
+[0;32m[----------] [m1 test from gtestProfile
+[0;32m[ RUN      ] [mgtestProfile.nsys1
+Rank 0/4 started on node hpcc-gpu-5-1 [myGPU = 0, nGPUs = 4]
+batch_size=3000; num_procs=4; hidden_size=512;
+Size of training set =  60000
+Size of testing set =   10000
+Precision on testing set for sequential training =   0.7279000000000000
+[0;32m[       OK ] [mgtestProfile.nsys1 (8786 ms)
+[0;32m[----------] [m1 test from gtestProfile (8786 ms total)
+
+[0;32m[----------] [mGlobal test environment tear-down
+[0;32m[==========] [m7 tests from 2 test suites ran. (45351 ms total)
+[0;32m[  PASSED  ] [m7 tests.
+[0;32m[       OK ] [mgtestProfile.nsys1 (8787 ms)
+[0;32m[----------] [m1 test from gtestProfile (8787 ms total)
+
+[0;32m[----------] [mGlobal test environment tear-down
+[0;32m[==========] [m7 tests from 2 test suites ran. (45352 ms total)
+[0;32m[  PASSED  ] [m7 tests.
+[0;32m[       OK ] [mgtestProfile.nsys1 (8786 ms)
+[0;32m[----------] [m1 test from gtestProfile (8786 ms total)
+
+[0;32m[----------] [mGlobal test environment tear-down
+[0;32m[==========] [m7 tests from 2 test suites ran. (45352 ms total)
+[0;32m[  PASSED  ] [m7 tests.
+Precision on testing set for parallel training =     0.7279000000000000
+Rel. err. in W[0]: 6.20529e-17
+Rel. err. in b[0]: 6.25289e-16
+Rel. err. in W[1]: 1.18151e-16
+Rel. err. in b[1]: 7.36324e-16
+[0;32m[       OK ] [mgtestProfile.nsys1 (9259 ms)
+[0;32m[----------] [m1 test from gtestProfile (9259 ms total)
+
+[0;32m[----------] [mGlobal test environment tear-down
+[0;32m[==========] [m7 tests from 2 test suites ran. (45849 ms total)
+[0;32m[  PASSED  ] [m7 tests.
