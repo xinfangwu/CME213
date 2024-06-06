@@ -69,6 +69,7 @@ void testTrain(hyperparameters &hparams)
   arma::Mat<nn_real> X(hparams.input_size, hparams.N);
   arma::Row<nn_real> label = arma::zeros<arma::Row<nn_real>>(hparams.N);
   arma::Mat<nn_real> y(hparams.num_classes, hparams.N);
+
   if (rank == 0)
   {
     read_mnist(file_train_images, X, hparams.N);
@@ -95,13 +96,13 @@ void testTrain(hyperparameters &hparams)
               << " seconds" << std::endl;
   }
 
+  // Loop for more accurate timing estimates
   std::vector<double> par_dts;
   int repeats = 10;
   for (int i = 0; i < repeats; i++)
   {
-    // Initialize a two-layer neural network on the CPU
+    // Initialize a two-layer neural network on the GPU
     NeuralNetwork nn_par(H);
-    // Initialize a neural network on the GPU from a neural network on the CPU
     DataParallelNeuralNetwork dpnn(nn_par, hparams.reg, hparams.learning_rate,
                                    hparams.batch_size, num_procs, rank);
     // Train on the GPU
@@ -138,7 +139,7 @@ void testTrain(hyperparameters &hparams)
   }
 }
 
-void profileTrain(hyperparameters &hparams)
+void profileTrain(hyperparameters &hparams, bool cpu = true)
 {
   // Continue MPI setup
   int rank, num_procs;
@@ -168,7 +169,6 @@ void profileTrain(hyperparameters &hparams)
               << "hidden_size=" << hparams.hidden_size << ";" << std::endl;
 
   // Initialize data
-
   arma::Mat<nn_real> X(hparams.input_size, hparams.N);
   arma::Row<nn_real> label = arma::zeros<arma::Row<nn_real>>(hparams.N);
   arma::Mat<nn_real> y(hparams.num_classes, hparams.N);
@@ -181,10 +181,11 @@ void profileTrain(hyperparameters &hparams)
 
   if (rank == 0)
   {
-
-    assert(X.n_cols == hparams.N && X.n_rows == hparams.input_size);
+    assert(X.n_cols == hparams.N &&
+           X.n_rows == hparams.input_size);
     assert(label.size() == hparams.N);
-    assert(y.n_cols == X.n_cols && y.n_cols == hparams.N);
+    assert(y.n_cols == X.n_cols &&
+           y.n_cols == hparams.N);
     assert(y.n_rows == hparams.num_classes);
 
     // Read MNIST images into Armadillo mat vector
@@ -193,20 +194,29 @@ void profileTrain(hyperparameters &hparams)
     label_to_y(label, hparams.num_classes, y);
     std::cout << "Size of training set =  " << X.n_cols << std::endl;
 
-    read_mnist(file_test_images, x_test, hparams.test_size);
-    read_mnist_label(file_test_labels, label_test, hparams.test_size);
-    label_to_y(label_test, hparams.num_classes, y_test);
+    if (hparams.test_size > 0)
+    {
+      assert(x_test.n_cols == hparams.test_size &&
+             x_test.n_rows == hparams.input_size);
+      assert(label_test.size() == hparams.test_size);
+      assert(y_test.n_cols == x_test.n_cols &&
+             y_test.n_cols == hparams.test_size);
+      assert(y_test.n_rows == hparams.num_classes);
+      read_mnist(file_test_images, x_test, hparams.test_size);
+      read_mnist_label(file_test_labels, label_test, hparams.test_size);
+      label_to_y(label_test, hparams.num_classes, y_test);
+    }
     std::cout << "Size of testing set =   " << x_test.n_cols << std::endl;
   }
 
-  // Initialize a two-layer neural network on the CPU
   std::vector<int> H = {hparams.input_size, hparams.hidden_size,
                         hparams.num_classes};
+  // Initialize a two-layer neural network on the CPU
   NeuralNetwork nn_seq(H);
 
-  // Train on the CPU
-  if (rank == 0)
+  if (cpu && rank == 0)
   {
+    // Train on the CPU
     train(nn_seq, X, y, hparams);
 
     if (hparams.test_size > 0)
@@ -218,9 +228,8 @@ void profileTrain(hyperparameters &hparams)
     }
   }
 
-  // Initialize a two-layer neural network on the CPU
+  // Initialize a two-layer neural network on the GPU
   NeuralNetwork nn_par(H);
-  // Initialize a neural network on the GPU from a neural network on the CPU
   DataParallelNeuralNetwork dpnn(nn_par, hparams.reg, hparams.learning_rate,
                                  hparams.batch_size, num_procs, rank);
   // Train on the GPU
@@ -230,19 +239,19 @@ void profileTrain(hyperparameters &hparams)
   nvtxRangePop();
   MPI_Barrier(MPI_COMM_WORLD);
 
-  // Check result of parallel training using the GPUs
-  if (rank == 0)
+  // Calculate the precision of the model
+  if (rank == 0 && hparams.test_size > 0)
   {
     dpnn.to_cpu(nn_par);
+    arma::Row<nn_real> label_pred;
+    predict(nn_par, x_test, label_pred);
+    nn_real prec = precision(label_pred, label_test);
+    printf("Precision on testing set for parallel training =   %20.16f\n", prec);
+  }
 
-    if (hparams.test_size > 0)
-    {
-      arma::Row<nn_real> label_pred;
-      predict(nn_par, x_test, label_pred);
-      nn_real prec = precision(label_pred, label_test);
-      printf("Precision on testing set for parallel training =   %20.16f\n", prec);
-    }
-
+  // Check result of parallel training using the GPUs
+  if (cpu && rank == 0)
+  {
     for (int i = 0; i < nn_par.num_layers; i++)
     {
       float rel_err_W = arma::norm(nn_seq.W[i] - nn_par.W[i], "fro") / arma::norm(nn_seq.W[i], "fro");
@@ -325,11 +334,22 @@ TEST(gtestTrain, custom)
 // Number of images in training file: 60000
 // Number of images in test file: 10000
 
+// Train on both CPU and GPU; difference between both models is computed
 TEST(gtestProfile, nsys1)
 {
-  hyperparameters hparams_custom =
-      hyperparameters{60000, 10000, 784, 512, 3000, 1, 10, 1e-4, 1e-2, 0};
-  profileTrain(hparams_custom);
+  hyperparameters hparams;
+  hparams = hyperparameters{60000, 10000, 784, 512, 3000, 1,
+                            10, 1e-4, 1e-2, 0};
+  profileTrain(hparams);
+}
+
+// Train on the GPU only
+TEST(gtestProfile, nsys2)
+{
+  hyperparameters hparams;
+  hparams = hyperparameters{60000, 10000, 784, 512, 3000, 1,
+                            10, 1e-4, 1e-2, 0};
+  profileTrain(hparams, false);
 }
 
 int main(int argc, char *argv[])
